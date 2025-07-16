@@ -20,6 +20,13 @@ suits = ['H', 'D', 'C', 'S']
 ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 starting_cash = 1000
 
+#These functions are to help me make the game easy to transmit from text based to GUI or "log"-based
+def get_input(msg):
+    return input(msg)
+
+def display(msg):
+    return print(msg)
+
 def create_deck(num_decks = 1):
     single_deck = [(rank, suit) for suit in suits for rank in ranks]
     return single_deck * num_decks
@@ -71,16 +78,16 @@ def display_hand(hand, hidden=False):
 def get_bet(cash):
     while True:
         try:
-            print("Cash: ", cash)
-            bet = int(input("Bet: "))
+            display(f"Cash: {cash}")
+            bet = int(get_input("Bet: "))
             if bet <= 0:
-                print("Bet must be positive.")
+                display("Bet must be positive.")
             elif bet > cash:
-                print("You don't have enough money for that bet.")
+                display("You don't have enough money for that bet.")
             else:
                 return bet
         except ValueError:
-            print("Please enter a valid number.")
+            display("Please enter a valid number.")
 
 def can_split(hand):    
     if len(hand) != 2:
@@ -105,16 +112,16 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand):
             prompt = "\nDo you want to hit, stand, or double down? "
         else:
             prompt = "\nDo you want to hit or stand? "
-        h_or_s = input(prompt).lower()
+        h_or_s = get_input(prompt).lower()
 
         if h_or_s == "hit":
             hand.append(deal_card(deck))
-            print(f"\nYou drew: {display_hand([hand[-1]])}")
-            print("Player Hand:", display_hand(hand))
-            print("Dealer Hand:", display_hand(dealer_hand, True))
+            display(f"\nYou drew: {display_hand([hand[-1]])}")
+            display(f"Player Hand: {display_hand(hand)}")
+            display(f"Dealer Hand: {display_hand(dealer_hand, True)}")
 
             if hand_value(hand) > 21:
-                print("Bust!")
+                display("Bust!")
                 return {
                     'hand': hand,
                     'result': 'bust',
@@ -132,11 +139,11 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand):
 
         elif h_or_s == "double down" and can_double:
             hand.append(deal_card(deck))
-            print(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
-            print("Player Hand:", display_hand(hand))
+            display(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
+            display(f"Player Hand: {display_hand(hand)}")
 
             if hand_value(hand) > 21:
-                print("Bust!")
+                display("Bust!")
                 return {
                     'hand': hand,
                     'result': 'bust',
@@ -152,7 +159,7 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand):
                 }
 
         else: 
-            print("Invalid Input")
+            display("Invalid Input")
 
 
 def play_round(cash, deck, sleep=False):
@@ -161,23 +168,23 @@ def play_round(cash, deck, sleep=False):
 
     bet = get_bet(cash)
 
-    print("\nPlayer hand:", display_hand(initial_hand))
-    print("Dealer hand:", display_hand(dealer_hand, hidden=True))
+    display(f"\nPlayer hand: {display_hand(initial_hand)}")
+    display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
 
     # Check for dealer blackjack first
     if hand_value(dealer_hand) == 21:
-        print("Dealer Blackjack!")
+        display("Dealer Blackjack!")
         if hand_value(initial_hand) == 21:
-            print("Push - both have blackjack")
+            display("Push - both have blackjack")
             return cash
         else:
-            print("Dealer Wins!")
+            display("Dealer Wins!")
             return cash - bet
 
     # Check for player blackjack
     if hand_value(initial_hand) == 21:
-        print("Blackjack!")
-        print("Player Wins!")
+        display("Blackjack!")
+        display("Player Wins!")
         return cash + int(1.5 * bet)
 
     # --- Refactored Split and Hand Preparation Logic ---
@@ -193,7 +200,7 @@ def play_round(cash, deck, sleep=False):
         # Check if splitting *this* hand would exceed MAX_HANDS
         # A split turns 1 hand into 2, so it adds 1 to the total count.
         if len(final_player_hands) + len(player_hands_for_decision) + 1 > MAX_HANDS:
-            print(f"Cannot split {display_hand(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
+            display(f"Cannot split {display_hand(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
             final_player_hands.append((current_hand, current_bet))
             continue # Move to the next hand in the decision queue
 
@@ -203,8 +210,8 @@ def play_round(cash, deck, sleep=False):
             continue # Move to the next hand in the decision queue
 
         # It's a pair and can be split
-        print(f"\nCurrently considering: {display_hand(current_hand)}")
-        split_choice = input("Do you want to split this hand? (y/n) ").lower()
+        display(f"\nCurrently considering: {display_hand(current_hand)}")
+        split_choice = get_input("Do you want to split this hand? (y/n) ").lower()
 
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]
@@ -214,7 +221,7 @@ def play_round(cash, deck, sleep=False):
             
             # Special handling for split aces (rule: only one card after split)
             if card1[0] == 'A':
-                print("Split aces detected — each hand gets one card only and cannot hit further.")
+                display("Split aces detected — each hand gets one card only and cannot hit further.")
                 # For aces, these hands are immediately considered final for decision making,
                 # as they cannot be split again or hit.
                 final_player_hands.append((new_hand1, current_bet))
@@ -236,16 +243,16 @@ def play_round(cash, deck, sleep=False):
 
         # Print the hand header BEFORE calling play_individual_hand
         if is_split_game:
-            print(f"\n--- Playing Hand {i+1} ---") # More prominent header
+            display(f"\n--- Playing Hand {i+1} ---") # More prominent header
         else:
-            print("\n--- Playing Your Hand ---") # For non-split game
+            display("\n--- Playing Your Hand ---") # For non-split game
 
         # Display the hand for the player to see *before* they are prompted for action
-        print("Player hand:", display_hand(hand))
-        print("Dealer hand:", display_hand(dealer_hand, hidden=True))
+        display(f"Player hand: {display_hand(hand)}")
+        display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
 
         if is_split_ace_initial:
-            print("Split Aces: This hand received one card and must stand.")
+            display("Split Aces: This hand received one card and must stand.")
             result = {
                 'hand': hand,
                 'result': 'stand',
@@ -253,7 +260,7 @@ def play_round(cash, deck, sleep=False):
                 'final': False
             }
         elif hand_value(hand) == 21 and is_split_game and len(hand) == 2 and hand[0][0] == 'A':
-            print("Split Aces: You got 21 with your second card. You must stand.")
+            display("Split Aces: You got 21 with your second card. You must stand.")
             result = {
                 'hand': hand,
                 'result': 'stand',
@@ -276,20 +283,20 @@ def play_round(cash, deck, sleep=False):
         if sleep == True:
             time.sleep(1)
 
-        print("\n" + "="*40)
-        print("Dealer's turn:")
-        print("="*40)
+        display("\n" + "="*40)
+        display("Dealer's turn:")
+        display("="*40)
 
-        print("\nDealer hand:", display_hand(dealer_hand))
-        print()
+        display(f"\nDealer hand: {display_hand(dealer_hand)}")
+        display("")
         
         while hand_value(dealer_hand) < 17:
             dealer_hand.append(deal_card(deck))
-            print(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
+            display(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
 
         dealer_total = hand_value(dealer_hand)
         if dealer_total > 21:
-            print("Dealer Busts!")
+            display("Dealer Busts!")
     else:
         dealer_total = hand_value(dealer_hand)
 
@@ -300,9 +307,9 @@ def play_round(cash, deck, sleep=False):
     if sleep == True:
         time.sleep(1)
 
-    print("\n" + "="*40)
-    print("FINAL RESULTS")
-    print("="*40)
+    display("\n" + "="*40)
+    display("FINAL RESULTS")
+    display("="*40)
 
     for i, result in enumerate(hand_results):
         hand = result['hand']
@@ -315,29 +322,29 @@ def play_round(cash, deck, sleep=False):
         else:
             hand_label = "Your hand"
             
-        print(f"\n{hand_label}: {display_hand(hand)} (Total: {player_total})")
+        display(f"\n{hand_label}: {display_hand(hand)} (Total: {player_total})")
         
         # Calculate outcome
         if result['final']:  # Already resolved (bust)
             if result['result'] == 'bust':
-                print(f"Result: BUST - LOSS (-${bet_amount})")
+                display(f"Result: BUST - LOSS (-${bet_amount})")
                 total_cash_change -= bet_amount
         else:  # Compare with dealer
-            print(f"Dealer hand: {display_hand(dealer_hand)} (Total: {hand_value(dealer_hand)})")
+            display(f"Dealer hand: {display_hand(dealer_hand)} (Total: {hand_value(dealer_hand)})")
             
             if dealer_total > 21:
-                print(f"Result: DEALER BUST - WIN (+${bet_amount})")
+                display(f"Result: DEALER BUST - WIN (+${bet_amount})")
                 total_cash_change += bet_amount
             elif player_total > dealer_total:
-                print(f"Result: WIN (+${bet_amount})")
+                display(f"Result: WIN (+${bet_amount})")
                 total_cash_change += bet_amount
             elif player_total < dealer_total:
-                print(f"Result: LOSS (-${bet_amount})")
+                display(f"Result: LOSS (-${bet_amount})")
                 total_cash_change -= bet_amount
             else:
-                print(f"Result: PUSH (+$0)")
+                display(f"Result: PUSH (+$0)")
     
-    print(f"\nNet change: {'+' if total_cash_change >= 0 else ''}${total_cash_change}")
+    display(f"\nNet change: {'+' if total_cash_change >= 0 else ''}${total_cash_change}")
     return cash + total_cash_change
 
 
@@ -364,19 +371,19 @@ def play_game():
         cash = play_round(cash, deck, sleep=True)
 
         if len(deck) < reshuffle_point: 
-            print(f"\nReshuffling... ({len(deck)} cards left)\n")
+            display(f"\nReshuffling... ({len(deck)} cards left)\n")
             deck = create_deck()
             shuffle_deck(deck)
 
-        print(f"\nCash: ${cash}")
+        display(f"\nCash: ${cash}")
         if cash <= 0:
-            print("Game over - out of money!\n")
+            display("Game over - out of money!\n")
             break
-        again = input("\nPlay another round? (y/n): ").lower()
-        print("-" * 50)
+        again = get_input("\nPlay another round? (y/n): ").lower()
+        display("-" * 50)
         if again != 'y':
-            print(f"Final Cash: ${cash}")
-            print("Thanks for playing!\n")
+            display(f"Final Cash: ${cash}")
+            display("Thanks for playing!\n")
             break
 
 if __name__ == "__main__":

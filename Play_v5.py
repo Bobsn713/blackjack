@@ -1,0 +1,383 @@
+# I worked with Claude, ChatGPT, and especially Gemini for this version. 
+# At this point, play round and play individual hand have been copy pasted so many times I'm not even sure 
+# I understand how they work
+# The goal was fixing iterated splits and other split related functionality
+# A little test of the split functionality is included. 
+# I feel like there are still details that could be improved about the formatting of printing but they are not 
+# really problems so much anymore as just like "possible improvements" so I'll leave them for right now
+
+
+
+# Import libraries
+import random
+import time 
+
+# Help for formatting Printing
+print("\n")
+
+# Generate a deck of cards
+suits = ['H', 'D', 'C', 'S']
+ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+starting_cash = 1000
+
+def create_deck(num_decks = 1):
+    single_deck = [(rank, suit) for suit in suits for rank in ranks]
+    return single_deck * num_decks
+
+def shuffle_deck(deck):
+    return random.shuffle(deck)
+
+def deal_card(deck):
+    if len(deck) == 0:
+        # Emergency reshuffle
+        deck.extend(create_deck())
+        shuffle_deck(deck)
+        print("Deck ran out, emergency reshuffle")
+        print("(adding 1 new deck)")
+    return deck.pop()
+
+def card_value(card):
+    rank, _ = card
+    if rank in ['J', 'Q', 'K']:
+        return 10
+    elif rank == 'A':
+        return 11
+    else:
+        return int(rank)
+
+def hand_value(hand):
+    total = 0
+    aces = 0 
+    
+    for card in hand: 
+        total += card_value(card)
+
+        #Check for aces
+        if card[0] == 'A':
+            aces +=1
+
+    while total > 21 and aces > 0:
+        total -= 10
+        aces -= 1
+
+    return total
+
+def display_hand(hand, hidden=False):
+    if hidden == False:
+        return ', '.join(f'{rank}{suit}' for rank, suit in hand)
+    else:
+        return f'{hand[0][0]}{hand[0][1]}, [X]'
+    
+def get_bet(cash):
+    while True:
+        try:
+            print("Cash: ", cash)
+            bet = int(input("Bet: "))
+            if bet <= 0:
+                print("Bet must be positive.")
+            elif bet > cash:
+                print("You don't have enough money for that bet.")
+            else:
+                return bet
+        except ValueError:
+            print("Please enter a valid number.")
+
+def can_split(hand):    
+    if len(hand) != 2:
+        return False
+    
+    return hand[0][0] == hand[1][0] # True if same rank
+
+
+def play_individual_hand(hand, deck, bet, cash, dealer_hand):
+    """
+    Play a single hand and return the result without printing final outcomes.
+    Returns a dictionary with hand state and result information.
+
+    Splits are handled in the play_round function because they should all happen before gameplay.
+    """
+    # Player's Turn
+    while True:
+        # Check if player can double
+        can_double = len(hand) == 2 and cash >= 2 * bet
+
+        if can_double:
+            prompt = "\nDo you want to hit, stand, or double down? "
+        else:
+            prompt = "\nDo you want to hit or stand? "
+        h_or_s = input(prompt).lower()
+
+        if h_or_s == "hit":
+            hand.append(deal_card(deck))
+            print(f"\nYou drew: {display_hand([hand[-1]])}")
+            print("Player Hand:", display_hand(hand))
+            print("Dealer Hand:", display_hand(dealer_hand, True))
+
+            if hand_value(hand) > 21:
+                print("Bust!")
+                return {
+                    'hand': hand,
+                    'result': 'bust',
+                    'bet_multiplier': 1,
+                    'final': True  # Hand is completely resolved
+                }
+            
+        elif h_or_s == "stand":
+            return {
+                'hand': hand,
+                'result': 'stand',
+                'bet_multiplier': 1,
+                'final': False  # Need to compare with dealer
+            }
+
+        elif h_or_s == "double down" and can_double:
+            hand.append(deal_card(deck))
+            print(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
+            print("Player Hand:", display_hand(hand))
+
+            if hand_value(hand) > 21:
+                print("Bust!")
+                return {
+                    'hand': hand,
+                    'result': 'bust',
+                    'bet_multiplier': 2,
+                    'final': True  # Hand is completely resolved
+                }
+            else:
+                return {
+                    'hand': hand,
+                    'result': 'doubled',
+                    'bet_multiplier': 2,
+                    'final': False  # Need to compare with dealer
+                }
+
+        else: 
+            print("Invalid Input")
+
+
+def play_round(cash, deck, sleep=False):
+    initial_hand = [deal_card(deck), deal_card(deck)]
+    dealer_hand = [deal_card(deck), deal_card(deck)]
+
+    bet = get_bet(cash)
+
+    print("\nPlayer hand:", display_hand(initial_hand))
+    print("Dealer hand:", display_hand(dealer_hand, hidden=True))
+
+    # Check for dealer blackjack first
+    if hand_value(dealer_hand) == 21:
+        print("Dealer Blackjack!")
+        if hand_value(initial_hand) == 21:
+            print("Push - both have blackjack")
+            return cash
+        else:
+            print("Dealer Wins!")
+            return cash - bet
+
+    # Check for player blackjack
+    if hand_value(initial_hand) == 21:
+        print("Blackjack!")
+        print("Player Wins!")
+        return cash + int(1.5 * bet)
+
+    # --- Refactored Split and Hand Preparation Logic ---
+    player_hands_for_decision = [(initial_hand, bet)] # Hands waiting for split decision
+    final_player_hands = [] # Hands ready for actual play
+
+    MAX_HANDS = 4 # Allow up to 4 hands total (initial + 3 splits)
+
+    # Phase 1: Handle all split decisions
+    while player_hands_for_decision:
+        current_hand, current_bet = player_hands_for_decision.pop(0) # Take the first hand to process
+
+        # Check if splitting *this* hand would exceed MAX_HANDS
+        # A split turns 1 hand into 2, so it adds 1 to the total count.
+        if len(final_player_hands) + len(player_hands_for_decision) + 1 > MAX_HANDS:
+            print(f"Cannot split {display_hand(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
+            final_player_hands.append((current_hand, current_bet))
+            continue # Move to the next hand in the decision queue
+
+        # If it's not a pair, or player can't afford, or max hands reached, it's a final hand
+        if not can_split(current_hand) or cash < (len(final_player_hands) + len(player_hands_for_decision) + 1) * bet or len(final_player_hands) + len(player_hands_for_decision) >= MAX_HANDS:
+            final_player_hands.append((current_hand, current_bet))
+            continue # Move to the next hand in the decision queue
+
+        # It's a pair and can be split
+        print(f"\nCurrently considering: {display_hand(current_hand)}")
+        split_choice = input("Do you want to split this hand? (y/n) ").lower()
+
+        if split_choice == 'y':
+            card1, card2 = current_hand[0], current_hand[1]
+            
+            new_hand1 = [card1, deal_card(deck)]
+            new_hand2 = [card2, deal_card(deck)]
+            
+            # Special handling for split aces (rule: only one card after split)
+            if card1[0] == 'A':
+                print("Split aces detected — each hand gets one card only and cannot hit further.")
+                # For aces, these hands are immediately considered final for decision making,
+                # as they cannot be split again or hit.
+                final_player_hands.append((new_hand1, current_bet))
+                final_player_hands.append((new_hand2, current_bet))
+            else:
+                # Add new hands to the front of the decision queue to process them next
+                player_hands_for_decision.insert(0, (new_hand2, current_bet))
+                player_hands_for_decision.insert(0, (new_hand1, current_bet))
+        else:
+            final_player_hands.append((current_hand, current_bet))
+
+    player_hands = final_player_hands # This will now be the correctly ordered list of hands to play
+    is_split_game = len(player_hands) > 1
+
+    # PLAY PHASE: Play out all prepared hands
+    hand_results = []
+    for i, (hand, hand_bet) in enumerate(player_hands):
+        is_split_ace_initial = (hand[0][0] == 'A' and len(hand) == 2 and is_split_game and hand_value(hand) != 21)
+
+        # Print the hand header BEFORE calling play_individual_hand
+        if is_split_game:
+            print(f"\n--- Playing Hand {i+1} ---") # More prominent header
+        else:
+            print("\n--- Playing Your Hand ---") # For non-split game
+
+        # Display the hand for the player to see *before* they are prompted for action
+        print("Player hand:", display_hand(hand))
+        print("Dealer hand:", display_hand(dealer_hand, hidden=True))
+
+        if is_split_ace_initial:
+            print("Split Aces: This hand received one card and must stand.")
+            result = {
+                'hand': hand,
+                'result': 'stand',
+                'bet_multiplier': 1,
+                'final': False
+            }
+        elif hand_value(hand) == 21 and is_split_game and len(hand) == 2 and hand[0][0] == 'A':
+            print("Split Aces: You got 21 with your second card. You must stand.")
+            result = {
+                'hand': hand,
+                'result': 'stand',
+                'bet_multiplier': 1,
+                'final': False
+            }
+        else:
+            result = play_individual_hand(
+                hand, deck, hand_bet, cash, dealer_hand,
+                is_split=is_split_game,
+                hand_num=(i + 1 if is_split_game else None)
+            )
+        hand_results.append(result)
+
+    # Check if any hands need dealer comparison
+    need_dealer = any(not result['final'] for result in hand_results)
+
+    # Play dealer's hand only if needed
+    if need_dealer:
+        if sleep == True:
+            time.sleep(1)
+
+        print("\n" + "="*40)
+        print("Dealer's turn:")
+        print("="*40)
+
+        print("\nDealer hand:", display_hand(dealer_hand))
+        print()
+        
+        while hand_value(dealer_hand) < 17:
+            dealer_hand.append(deal_card(deck))
+            print(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
+
+        dealer_total = hand_value(dealer_hand)
+        if dealer_total > 21:
+            print("Dealer Busts!")
+    else:
+        dealer_total = hand_value(dealer_hand)
+
+
+    # Calculate and display final results
+    total_cash_change = 0
+    
+    if sleep == True:
+        time.sleep(1)
+
+    print("\n" + "="*40)
+    print("FINAL RESULTS")
+    print("="*40)
+
+    for i, result in enumerate(hand_results):
+        hand = result['hand']
+        player_total = hand_value(hand)
+        bet_amount = bet * result['bet_multiplier'] # Use original bet for multiplier
+        
+        # Determine hand label
+        if is_split_game:
+            hand_label = f"Hand {i+1}"
+        else:
+            hand_label = "Your hand"
+            
+        print(f"\n{hand_label}: {display_hand(hand)} (Total: {player_total})")
+        
+        # Calculate outcome
+        if result['final']:  # Already resolved (bust)
+            if result['result'] == 'bust':
+                print(f"Result: BUST - LOSS (-${bet_amount})")
+                total_cash_change -= bet_amount
+        else:  # Compare with dealer
+            print(f"Dealer hand: {display_hand(dealer_hand)} (Total: {hand_value(dealer_hand)})")
+            
+            if dealer_total > 21:
+                print(f"Result: DEALER BUST - WIN (+${bet_amount})")
+                total_cash_change += bet_amount
+            elif player_total > dealer_total:
+                print(f"Result: WIN (+${bet_amount})")
+                total_cash_change += bet_amount
+            elif player_total < dealer_total:
+                print(f"Result: LOSS (-${bet_amount})")
+                total_cash_change -= bet_amount
+            else:
+                print(f"Result: PUSH (+$0)")
+    
+    print(f"\nNet change: {'+' if total_cash_change >= 0 else ''}${total_cash_change}")
+    return cash + total_cash_change
+
+
+def play_game():
+    cash = starting_cash
+    deck = create_deck()
+    shuffle_deck(deck)
+
+    deck_len = len(deck)
+    reshuffle_point = int(deck_len / 4)
+
+    # ### SPECIAL TESTING CODE
+    # cards_to_add = list(reversed([
+    #     ('A', 'H'), ('A', 'D'),   # Player initial hand (8,8)
+    #     ('A', 'C'), ('A', 'S'),   # Cards dealt to first and second hands
+    #     ('8', 'H'), ('8', 'D'),   # Further split hands
+    #     ('10', 'H'), ('7', 'D')   # Dealer cards
+    # ]))
+
+    # deck.extend(cards_to_add)
+    # ###SPECIAL TESTING CODE ^^^^^^^
+
+    while cash > 0:
+        cash = play_round(cash, deck, sleep=True)
+
+        if len(deck) < reshuffle_point: 
+            print(f"\nReshuffling... ({len(deck)} cards left)\n")
+            deck = create_deck()
+            shuffle_deck(deck)
+
+        print(f"\nCash: ${cash}")
+        if cash <= 0:
+            print("Game over - out of money!\n")
+            break
+        again = input("\nPlay another round? (y/n): ").lower()
+        print("-" * 50)
+        if again != 'y':
+            print(f"Final Cash: ${cash}")
+            print("Thanks for playing!\n")
+            break
+
+if __name__ == "__main__":
+    play_game()

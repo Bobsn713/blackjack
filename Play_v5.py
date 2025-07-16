@@ -268,11 +268,8 @@ def play_round(cash, deck, sleep=False):
                 'final': False
             }
         else:
-            result = play_individual_hand(
-                hand, deck, hand_bet, cash, dealer_hand,
-                is_split=is_split_game,
-                hand_num=(i + 1 if is_split_game else None)
-            )
+            result = play_individual_hand(hand, deck, hand_bet, cash, dealer_hand)
+            
         hand_results.append(result)
 
     # Check if any hands need dealer comparison

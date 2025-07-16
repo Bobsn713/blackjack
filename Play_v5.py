@@ -12,20 +12,10 @@
 import random
 import time 
 
-# Help for formatting Printing
-print("\n")
-
 # Generate a deck of cards
 suits = ['H', 'D', 'C', 'S']
 ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 starting_cash = 1000
-
-#These functions are to help me make the game easy to transmit from text based to GUI or "log"-based
-def get_input(msg):
-    return input(msg)
-
-def display(msg):
-    return print(msg)
 
 def create_deck(num_decks = 1):
     single_deck = [(rank, suit) for suit in suits for rank in ranks]
@@ -34,13 +24,13 @@ def create_deck(num_decks = 1):
 def shuffle_deck(deck):
     return random.shuffle(deck)
 
-def deal_card(deck):
+def deal_card(deck, display = print):
     if len(deck) == 0:
         # Emergency reshuffle
         deck.extend(create_deck())
         shuffle_deck(deck)
-        print("Deck ran out, emergency reshuffle")
-        print("(adding 1 new deck)")
+        display("Deck ran out, emergency reshuffle")
+        display("(adding 1 new deck)")
     return deck.pop()
 
 def card_value(card):
@@ -75,7 +65,7 @@ def display_hand(hand, hidden=False):
     else:
         return f'{hand[0][0]}{hand[0][1]}, [X]'
     
-def get_bet(cash):
+def get_bet(cash, get_input = input, display = print):
     while True:
         try:
             display(f"Cash: {cash}")
@@ -96,7 +86,7 @@ def can_split(hand):
     return hand[0][0] == hand[1][0] # True if same rank
 
 
-def play_individual_hand(hand, deck, bet, cash, dealer_hand):
+def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_input = input, display = print):
     """
     Play a single hand and return the result without printing final outcomes.
     Returns a dictionary with hand state and result information.
@@ -162,7 +152,7 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand):
             display("Invalid Input")
 
 
-def play_round(cash, deck, sleep=False):
+def play_round(cash, deck, sleep=False, get_input = input, display = print):
     initial_hand = [deal_card(deck), deal_card(deck)]
     dealer_hand = [deal_card(deck), deal_card(deck)]
 
@@ -248,6 +238,7 @@ def play_round(cash, deck, sleep=False):
             display("\n--- Playing Your Hand ---") # For non-split game
 
         # Display the hand for the player to see *before* they are prompted for action
+        # I WANT TO FIX THIS. AS IT STANDS, IT JUST PRINTS THE HANDS TWICE. WHY WOULD WE WANT THAT?
         display(f"Player hand: {display_hand(hand)}")
         display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
 
@@ -345,7 +336,7 @@ def play_round(cash, deck, sleep=False):
     return cash + total_cash_change
 
 
-def play_game():
+def play_game(get_input = input, display = print):
     cash = starting_cash
     deck = create_deck()
     shuffle_deck(deck)
@@ -364,8 +355,11 @@ def play_game():
     # deck.extend(cards_to_add)
     # ###SPECIAL TESTING CODE ^^^^^^^
 
+    #Just for formatting
+    display("\n") #Do I need this?
+
     while cash > 0:
-        cash = play_round(cash, deck, sleep=True)
+        cash = play_round(cash, deck)
 
         if len(deck) < reshuffle_point: 
             display(f"\nReshuffling... ({len(deck)} cards left)\n")

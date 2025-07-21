@@ -6,11 +6,13 @@ The goal of this project is first of all to "hardcode" a program that can tell m
 
 ## Structure
 
-As this has evolved, the first task has been to create a text based, playable Blackjack game to ensure that the game logic functions as it should. That is more or less completed now as **Play_v5.py**.
+**Logic.py** is the brains of the game, where the fundamental gameplay mechanics are defined and stored. 
+
+**Text.py** will be where the text based terminal game can be played.
 
 **Hardcode.py** will be where the brains are that can play each hand perfectly.
 
-After that, I'll make a third file to develop the **neural net**.
+**Neural Net.py** will be, predictably, where I train the neural net.
 
 The tests in the **Tests** folder helped make sure the logic was correct, but may already be somewhat outdated.
 

@@ -1,6 +1,4 @@
-#Logic.py is really Play_v6.py
-#I'm trying to separate out the text based aspects from the general aspects
-#My basic strategy is to make a dictionary that gets updated instead of print statements
+# Rewriting Play_v5.py to be agnostic about display/output
 
 # Import libraries
 import random
@@ -53,11 +51,12 @@ def hand_value(hand):
 
     return total
 
-def display_hand(hand, hidden=False):
-    if hidden == False:
-        return ', '.join(f'{rank}{suit}' for rank, suit in hand)
-    else:
-        return f'{hand[0][0]}{hand[0][1]}, [X]'
+# I/O Should go to Text.py
+# def display_hand(hand, hidden=False):
+#     if hidden == False:
+#         return ', '.join(f'{rank}{suit}' for rank, suit in hand)
+#     else:
+#         return f'{hand[0][0]}{hand[0][1]}, [X]'
     
 def get_bet(cash, get_input = input, display = print):
     while True:

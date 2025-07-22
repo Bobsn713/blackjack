@@ -6,7 +6,7 @@ The goal of this project is first of all to "hardcode" a program that can tell m
 
 ## Structure
 
-**Logic.py** is the brains of the game, where the fundamental gameplay mechanics are defined and stored. 
+**Logic.py** is the brains of the game, where the fundamental gameplay mechanics are defined and stored.
 
 **Text.py** will be where the text based terminal game can be played.
 

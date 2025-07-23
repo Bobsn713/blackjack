@@ -86,3 +86,6 @@ soft_test_3()
 # print(hc.is_soft_total([('A', 'H'), ('2', 'H'), ('3', 'H'), ('A', 'H')]))
 # print(hc.is_soft_total([('A', 'H'), ('2', 'H'), ('10', 'H'), ('A', 'H')]))
 # IS_SOFT is WORKING, now I can go back to other tests
+
+
+#I don't really want to test hardcode right now I think it works

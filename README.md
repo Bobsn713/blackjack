@@ -2,27 +2,46 @@
 
 ## Goal
 
-The goal of this project is first of all to "hardcode" a program that can tell me what to do in blackjack, and second of all to train a neural net to learn on its own.
+The goal of this project is first of all to "hardcode" a program that can tell me what to do in blackjack, and second of all to train a neural net to learn to play well on its own.
 
 ## Structure
 
-As this has evolved, the first task has been to create a text based, playable Blackjack game to ensure that the game logic functions as it should. That is more or less completed now as **Play_v5.py**.
+**Logic.py** is the brains of the game, where the fundamental gameplay mechanics are defined and stored.
+
+**Text.py** will be where functions for the text based terminal game are stored.
 
 **Hardcode.py** will be where the brains are that can play each hand perfectly.
 
-After that, I'll make a third file to develop the **neural net**.
+**Neural Net.py** will be, predictably, where I train the neural net.
 
-The tests in the **Tests** folder helped make sure the logic was correct, but may already be somewhat outdated.
+### Temporary Files
 
-The most likely way for all of this to change is that in editing the "play" file so that it can be used for the Hardcode and Neural Net files, it may stop being the playable game, and just the "brains".
+---
+**Scrapwork.py** is a place to work out an alternative way to store data, which I may use but I am still not sure.
 
-There may also be two versions of the "Hardcode" file, one which plays games against the computer iteratively (as a proof of concept), and another that can be used by a player who inputs gameplay information and gets told how to play.
+### Notes
 
-Finally, at this stage I do not integrate card counting strategies, and the rules of the game are not customizable. These are the final things that would be worth changing.
+---
+Eventually there may also be an **Advice.py** file that can be used by a player who inputs gameplay information and gets told how to play.
 
-### Sources
+At this stage I do not integrate card counting strategies, and the rules of the game are not customizable. These will be worth implementing eventually.
+
+## Rules
+
+For now the rules are:
+
+* doubling down is allowed,
+* splitting is allowed,
+* maximum 3 splits (4 hands),
+* doubling down after splitting is allowed,
+* if aces are split, only one card is dealt to each hand
+* no insurance or surrender,
+* dealer hits on a soft 17 (H17),
+
+## Sources
 
 Source for charts
 <https://www.blackjackapprenticeship.com/blackjack-strategy-charts/>
+
 Source for blackjack rules
 <https://bicyclecards.com/how-to-play/blackjack>

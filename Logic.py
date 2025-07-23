@@ -455,4 +455,4 @@ def run_hardcode_mode(game_or_round):
 
 
 if __name__ == "__main__":
-    run_text_mode()
+    run_hardcode_mode('game')

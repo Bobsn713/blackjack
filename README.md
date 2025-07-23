@@ -8,19 +8,21 @@ The goal of this project is first of all to "hardcode" a program that can tell m
 
 **Logic.py** is the brains of the game, where the fundamental gameplay mechanics are defined and stored.
 
-**Text.py** will be where the text based terminal game can be played.
+**Text.py** will be where functions for the text based terminal game are stored.
 
 **Hardcode.py** will be where the brains are that can play each hand perfectly.
 
 **Neural Net.py** will be, predictably, where I train the neural net.
 
-The tests in the **Tests** folder helped make sure the logic was correct, but may already be somewhat outdated.
+### Temporary Files
 
-The most likely way for all of this to change is that in editing the "play" file so that it can be used for the Hardcode and Neural Net files, it may stop being the playable game, and just the "brains".
+**Logic_(Test_Hardcode).py** is just a file to make sure the functions in Hardcode are working, but will eventually be unnecessary.
 
-There may also be two versions of the "Hardcode" file, one which plays games against the computer iteratively (as a proof of concept), and another that can be used by a player who inputs gameplay information and gets told how to play.
+**Scrapwork.py** is a place to work out an alternative way to store data, which I may use but I am still not sure.
 
-Finally, at this stage I do not integrate card counting strategies, and the rules of the game are not customizable. These are the final things that would be worth changing.
+Eventually there may also be an **Advice.py** file that can be used by a player who inputs gameplay information and gets told how to play.
+
+At this stage I do not integrate card counting strategies, and the rules of the game are not customizable. These will be worth implementing eventually.
 
 ### Sources
 

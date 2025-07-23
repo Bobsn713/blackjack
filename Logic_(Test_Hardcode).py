@@ -1,16 +1,10 @@
-# I worked with Claude, ChatGPT, and especially Gemini for this version. 
-# At this point, play round and play individual hand have been copy pasted so many times I'm not even sure 
-# I understand how they work
-# The goal was fixing iterated splits and other split related functionality
-# A little test of the split functionality is included. 
-# I feel like there are still details that could be improved about the formatting of printing but they are not 
-# really problems so much anymore as just like "possible improvements" so I'll leave them for right now
-
-
+# Rewriting Play_v5.py to be agnostic about display/output
 
 # Import libraries
 import random
 import time 
+import Text as text
+import Hardcode as hc
 
 # Generate a deck of cards
 suits = ['H', 'D', 'C', 'S']
@@ -24,13 +18,12 @@ def create_deck(num_decks = 1):
 def shuffle_deck(deck):
     return random.shuffle(deck)
 
-def deal_card(deck, display = print):
+def deal_card(deck, notify_reshuffle = text.emergency_reshuffle_print):
     if len(deck) == 0:
         # Emergency reshuffle
         deck.extend(create_deck())
         shuffle_deck(deck)
-        display("Deck ran out, emergency reshuffle")
-        display("(adding 1 new deck)")
+        notify_reshuffle()
     return deck.pop()
 
 def card_value(card):
@@ -59,26 +52,6 @@ def hand_value(hand):
 
     return total
 
-def display_hand(hand, hidden=False):
-    if hidden == False:
-        return ', '.join(f'{rank}{suit}' for rank, suit in hand)
-    else:
-        return f'{hand[0][0]}{hand[0][1]}, [X]'
-    
-def get_bet(cash, get_input = input, display = print):
-    while True:
-        try:
-            display(f"Cash: {cash}")
-            bet = int(get_input("Bet: "))
-            if bet <= 0:
-                display("Bet must be positive.")
-            elif bet > cash:
-                display("You don't have enough money for that bet.")
-            else:
-                return bet
-        except ValueError:
-            display("Please enter a valid number.")
-
 def can_split(hand):    
     if len(hand) != 2:
         return False
@@ -86,7 +59,7 @@ def can_split(hand):
     return hand[0][0] == hand[1][0] # True if same rank
 
 
-def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_input = input, display = print):
+def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, display = print):
     """
     Play a single hand and return the result without printing final outcomes.
     Returns a dictionary with hand state and result information.
@@ -95,20 +68,14 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_input = input, 
     """
     # Player's Turn
     while True:
-        # Check if player can double
-        can_double = len(hand) == 2 and cash >= 2 * bet
-
-        if can_double:
-            prompt = "\nDo you want to hit, stand, or double down? "
-        else:
-            prompt = "\nDo you want to hit or stand? "
-        h_or_s = get_input(prompt).lower()
+        can_double = len(hand) == 2 and cash >= 2 * bet #This is also in Text.py
+        h_or_s = get_hit_stand_dd(hand, dealer_hand, can_double)
 
         if h_or_s == "hit":
             hand.append(deal_card(deck))
-            display(f"\nYou drew: {display_hand([hand[-1]])}")
-            display(f"Player Hand: {display_hand(hand)}")
-            display(f"Dealer Hand: {display_hand(dealer_hand, True)}")
+            display(f"\nYou drew: {text.display_hand_print([hand[-1]])}")
+            display(f"Player Hand: {text.display_hand_print(hand)}")
+            display(f"Dealer Hand: {text.display_hand_print(dealer_hand, True)}")
 
             if hand_value(hand) > 21:
                 display("Bust!")
@@ -129,8 +96,8 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_input = input, 
 
         elif h_or_s == "double down" and can_double:
             hand.append(deal_card(deck))
-            display(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
-            display(f"Player Hand: {display_hand(hand)}")
+            display(f"\nYou doubled down and drew: {text.display_hand_print([hand[-1]])}")
+            display(f"Player Hand: {text.display_hand_print(hand)}")
 
             if hand_value(hand) > 21:
                 display("Bust!")
@@ -152,14 +119,14 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_input = input, 
             display("Invalid Input")
 
 
-def play_round(cash, deck, sleep=False, get_input = input, display = print):
+def play_round(cash, deck, sleep=False, get_bet = hc.get_bet_hardcode, get_split_choice = hc.get_split_choice_hardcode, display = print):
     initial_hand = [deal_card(deck), deal_card(deck)]
     dealer_hand = [deal_card(deck), deal_card(deck)]
 
     bet = get_bet(cash)
 
-    display(f"\nPlayer hand: {display_hand(initial_hand)}")
-    display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
+    display(f"\nPlayer hand: {text.display_hand_print(initial_hand)}")
+    display(f"Dealer hand: {text.display_hand_print(dealer_hand, hidden=True)}")
 
     # Check for dealer blackjack first
     if hand_value(dealer_hand) == 21:
@@ -190,7 +157,7 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
         # Check if splitting *this* hand would exceed MAX_HANDS
         # A split turns 1 hand into 2, so it adds 1 to the total count.
         if len(final_player_hands) + len(player_hands_for_decision) + 1 > MAX_HANDS:
-            display(f"Cannot split {display_hand(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
+            display(f"Cannot split {text.display_hand_print(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
             final_player_hands.append((current_hand, current_bet))
             continue # Move to the next hand in the decision queue
 
@@ -200,8 +167,7 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
             continue # Move to the next hand in the decision queue
 
         # It's a pair and can be split
-        display(f"\nCurrently considering: {display_hand(current_hand)}")
-        split_choice = get_input("Do you want to split this hand? (y/n) ").lower()
+        split_choice = get_split_choice(current_hand, dealer_hand)
 
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]
@@ -239,8 +205,8 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
 
         # Display the hand for the player to see *before* they are prompted for action
         # I WANT TO FIX THIS. AS IT STANDS, IT JUST PRINTS THE HANDS TWICE. WHY WOULD WE WANT THAT?
-        display(f"Player hand: {display_hand(hand)}")
-        display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
+        display(f"Player hand: {text.display_hand_print(hand)}")
+        display(f"Dealer hand: {text.display_hand_print(dealer_hand, hidden=True)}")
 
         if is_split_ace_initial:
             display("Split Aces: This hand received one card and must stand.")
@@ -275,12 +241,12 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
         display("Dealer's turn:")
         display("="*40)
 
-        display(f"\nDealer hand: {display_hand(dealer_hand)}")
+        display(f"\nDealer hand: {text.display_hand_print(dealer_hand)}")
         display("")
         
         while hand_value(dealer_hand) < 17:
             dealer_hand.append(deal_card(deck))
-            display(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
+            display(f"Dealer drew: {text.display_hand_print([dealer_hand[-1]])}")
 
         dealer_total = hand_value(dealer_hand)
         if dealer_total > 21:
@@ -310,7 +276,7 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
         else:
             hand_label = "Your hand"
             
-        display(f"\n{hand_label}: {display_hand(hand)} (Total: {player_total})")
+        display(f"\n{hand_label}: {text.display_hand_print(hand)} (Total: {player_total})")
         
         # Calculate outcome
         if result['final']:  # Already resolved (bust)
@@ -318,7 +284,7 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
                 display(f"Result: BUST - LOSS (-${bet_amount})")
                 total_cash_change -= bet_amount
         else:  # Compare with dealer
-            display(f"Dealer hand: {display_hand(dealer_hand)} (Total: {hand_value(dealer_hand)})")
+            display(f"Dealer hand: {text.display_hand_print(dealer_hand)} (Total: {hand_value(dealer_hand)})")
             
             if dealer_total > 21:
                 display(f"Result: DEALER BUST - WIN (+${bet_amount})")
@@ -336,7 +302,7 @@ def play_round(cash, deck, sleep=False, get_input = input, display = print):
     return cash + total_cash_change
 
 
-def play_game(get_input = input, display = print):
+def play_game(get_another_round = hc.get_another_round_hardcode, display = print):
     cash = starting_cash
     deck = create_deck()
     shuffle_deck(deck)
@@ -346,9 +312,9 @@ def play_game(get_input = input, display = print):
 
     # ### SPECIAL TESTING CODE
     # cards_to_add = list(reversed([
-    #     ('A', 'H'), ('A', 'D'),   # Player initial hand (8,8)
-    #     ('A', 'C'), ('A', 'S'),   # Cards dealt to first and second hands
-    #     ('8', 'H'), ('8', 'D'),   # Further split hands
+    #     ('A', 'H'), ('9', 'D'),   # Player initial hand (8,8)
+    #     ('7', 'C'), ('10', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+    #     ('A', 'H'), ('10f', 'D'),   # Further split hands
     #     ('10', 'H'), ('7', 'D')   # Dealer cards
     # ]))
 
@@ -370,7 +336,7 @@ def play_game(get_input = input, display = print):
         if cash <= 0:
             display("Game over - out of money!\n")
             break
-        again = get_input("\nPlay another round? (y/n): ").lower()
+        again = get_another_round()
         display("-" * 50)
         if again != 'y':
             display(f"Final Cash: ${cash}")

@@ -18,42 +18,42 @@ def hard_decision(player_hand, dealer_hand, can_double):
 
     # Decision logic from chart
     if player_total >= 17:
-        return "Stand"
+        return "stand"
     elif player_total >= 13 and dealer_upcard_rank in [2, 3, 4, 5, 6]:
-        return "Stand"
+        return "stand"
     elif player_total == 12 and dealer_upcard_rank in [4, 5, 6]:
-        return "Stand"
+        return "stand"
     elif player_total == 11:
-        return "Double Down" if can_double else "Hit"
+        return "double down" if can_double else "hit"
     elif player_total == 10 and dealer_upcard_rank not in [10, 'A']:
-        return "Double Down" if can_double else "Hit"
+        return "double down" if can_double else "hit"
     elif player_total == 9 and dealer_upcard_rank in [3, 4, 5, 6]:
-        return "Double Down" if can_double else "Hit"
+        return "double down" if can_double else "hit"
     else:
-        return "Hit"
+        return "hit"
     
 def soft_decision(player_hand, dealer_hand, can_double, soft_total):
     dealer_upcard_rank = dealer_hand[0][0]
-
+    print(f"Soft Total: {soft_total}")
     # Decision logic from chart
-    if soft_total in ['9', '10']:
-        return "Stand"
-    elif soft_total == '8' and dealer_upcard_rank == '6':
-        return "Double Down" if can_double else "Stand"
-    elif soft_total == '8':
-        return "Stand"
-    elif soft_total == '7' and dealer_upcard_rank in ['2', '3', '4', '5', '6']:
-        return "Double Down" if can_double else "Stand"
-    elif soft_total == '7' and dealer_upcard_rank in ['7', '8']:
-        return "Stand"
-    elif soft_total == '6' and dealer_upcard_rank in ['3', '4', '5', '6']:
-        return "Double Down" if can_double else "Hit"
-    elif soft_total in ['4', '5'] and dealer_upcard_rank in ['4', '5', '6']:
-        return "Double Down" if can_double else "Hit"
-    elif soft_total in ['2', '3'] and dealer_upcard_rank in ['5', '6']:
-        return "Double Down" if can_double else "Hit"
+    if soft_total in [9, 10]:
+        return "stand"
+    elif soft_total == 8 and dealer_upcard_rank == '6':
+        return "double down" if can_double else "stand"
+    elif soft_total == 8:
+        return "stand"
+    elif soft_total == 7 and dealer_upcard_rank in ['2', '3', '4', '5', '6']:
+        return "double down" if can_double else "stand"
+    elif soft_total == 7 and dealer_upcard_rank in ['7', '8']:
+        return "stand"
+    elif soft_total == 6 and dealer_upcard_rank in ['3', '4', '5', '6']:
+        return "double down" if can_double else "hit"
+    elif soft_total in [4, 5] and dealer_upcard_rank in ['4', '5', '6']:
+        return "double down" if can_double else "hit"
+    elif soft_total in [2, 3] and dealer_upcard_rank in ['5', '6']:
+        return "double down" if can_double else "hit"
     else:
-        return "Hit"
+        return "hit"
     
 def split_decision(player_hand, dealer_hand):
     card = player_hand[0][0] #Either hand would do
@@ -82,7 +82,7 @@ def split_decision(player_hand, dealer_hand):
 def get_bet_hardcode(cash):
     return 100 #Automatically set the bet amount to 100
 
-def get_split_choice(player_hand, dealer_hand): 
+def get_split_choice_hardcode(player_hand, dealer_hand): 
     card = player_hand[0][0] #Either hand would do
     dealer_upcard_rank = dealer_hand[0][0]
 

@@ -159,7 +159,7 @@ def play_round(
         
         if hand_value(initial_hand) == 21:
             display("Push - both have blackjack")
-            results_dict = {'cash_change': 0,  #IF IM NOT GONNA RETURN THESE HERE, I NEED TO DO SOME WORK ON THE PRINTING
+            results_dict = {  #IF IM NOT GONNA RETURN THESE HERE, I NEED TO DO SOME WORK ON THE PRINTING
                     'cash_changes' : [0],       #THIS WILL STILL ASK IF I WANT TO HIT AFTER DECLARING BLACKJACK
                     'player_hands' : [initial_hand],
                     'dealer_hand': dealer_hand, 
@@ -167,7 +167,7 @@ def play_round(
         else:
             display("Dealer Blackjack!")
             display("Dealer Wins!")
-            results_dict = {'cash_change': - bet, 
+            results_dict = { 
                     'cash_changes' : [-bet],
                     'player_hands' : [initial_hand],
                     'dealer_hand': dealer_hand, 
@@ -177,7 +177,7 @@ def play_round(
     if hand_value(initial_hand) == 21:
         display("Blackjack!")
         display("Player Wins!")
-        results_dict = {'cash_change': 1.5 * bet, 
+        results_dict = { 
                 'cash_changes': [1.5 * bet],
                 'player_hands' : [initial_hand],
                 'dealer_hand': dealer_hand, 
@@ -303,7 +303,7 @@ def play_round(
             #     else:
             #         outcomes.append("Dealer Bust")
 
-            results_dict = {'cash_change': bet, # I have to change this because its returning too early and not printing final results
+            results_dict = { # I have to change this because its returning too early and not printing final results
                     'cash_changes': [bet], #is this bad because it can't handle split hands? 
                     'player_hands' : [d['hand'] for d in hand_results],
                     'dealer_hand': dealer_hand, 
@@ -368,7 +368,7 @@ def play_round(
                 outcomes.append('Push')
     
     display(f"\nNet change: {'+' if total_cash_change >= 0 else ''}${total_cash_change}")
-    results_dict = {'cash_change': total_cash_change, 
+    results_dict = { 
             'cash_changes': cash_changes, #list
             'player_hands' : [d['hand'] for d in hand_results], #list
             'dealer_hand': dealer_hand, 
@@ -395,16 +395,16 @@ def play_game(
     deck_len = len(deck)
     reshuffle_point = int(deck_len / 4)
 
-    # ### SPECIAL TESTING CODE
-    # cards_to_add = list(reversed([
-    #     ('A', 'H'), ('10', 'D'),   # Player initial hand (8,8)
-    #     ('K', 'C'), ('3', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
-    #     ('8', 'H'), ('8', 'D'),   # Further split hands
-    #     ('10', 'H'), ('7', 'D')   # Dealer cards
-    # ]))
+    ### SPECIAL TESTING CODE
+    cards_to_add = list(reversed([
+        ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
+        ('8', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+        ('8', 'H'), ('8', 'D'),   # Further split hands
+        ('10', 'H'), ('7', 'D')   # Dealer cards
+    ]))
 
-    # deck.extend(cards_to_add)
-    # ###SPECIAL TESTING CODE ^^^^^^^
+    deck.extend(cards_to_add)
+    ###SPECIAL TESTING CODE ^^^^^^^
 
     #Just for formatting
     display("\n") #Do I need this?
@@ -421,7 +421,7 @@ def play_game(
                     display_hand,
                     display_emergency_reshuffle)
 
-        cash = cash + result_dict['cash_change']
+        cash = cash + sum(result_dict['cash_changes'])
 
         if len(deck) < reshuffle_point: 
             display(f"\nReshuffling... ({len(deck)} cards left)\n")

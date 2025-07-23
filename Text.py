@@ -5,7 +5,7 @@
 # Potentially I should do all the error handling stuff in this instead of Logic.py
 # e.g. "You must enter a number greater than 1"
 
-def emergency_reshuffle_print():
+def display_emergency_reshuffle_print():
     print("Deck ran out, emergency reshuffle")
     print("(adding 1 new deck)")
 

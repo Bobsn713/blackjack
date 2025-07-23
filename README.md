@@ -17,8 +17,6 @@ The goal of this project is first of all to "hardcode" a program that can tell m
 ### Temporary Files
 
 ---
-**Logic_(Test_Hardcode).py** is just a file to make sure the functions in Hardcode are working, but will eventually be unnecessary.
-
 **Scrapwork.py** is a place to work out an alternative way to store data, which I may use but I am still not sure.
 
 ### Notes

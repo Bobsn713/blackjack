@@ -68,7 +68,7 @@ def play_individual_hand(hand, deck, bet, cash, dealer_hand, get_hit_stand_dd = 
     # Player's Turn
     while True:
         can_double = len(hand) == 2 and cash >= 2 * bet #This is also in Text.py
-        h_or_s = get_hit_stand_dd(hand, cash, bet)
+        h_or_s = get_hit_stand_dd(hand, dealer_hand, can_double)
 
         if h_or_s == "hit":
             hand.append(deal_card(deck))
@@ -166,7 +166,7 @@ def play_round(cash, deck, sleep=True, get_bet = text.get_bet_print, get_split_c
             continue # Move to the next hand in the decision queue
 
         # It's a pair and can be split
-        split_choice = get_split_choice(current_hand)
+        split_choice = get_split_choice(current_hand, dealer_hand)
 
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]

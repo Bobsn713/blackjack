@@ -1,4 +1,4 @@
-import Play_v5 as bj
+import Logic as bj
 
 def chart_sorting(player_hand, dealer_hand):
     if player_hand[0][0] == player_hand[1][0]:
@@ -12,7 +12,7 @@ def chart_sorting(player_hand, dealer_hand):
 #I think it's fine but it may be more like technically fair if these functions only get
 # passed the dealer's upcard and not his whole hand (maybe more relevant for NN?)
 
-def hard_decision(player_hand, dealer_hand):
+def hard_decision(player_hand, dealer_hand, can_double):
     player_total = bj.hand_value(player_hand)
     dealer_upcard_rank = dealer_hand[0][0]
 
@@ -24,42 +24,34 @@ def hard_decision(player_hand, dealer_hand):
     elif player_total == 12 and dealer_upcard_rank in [4, 5, 6]:
         return "Stand"
     elif player_total == 11:
-        return "Double Down"
+        return "Double Down" if can_double else "Hit"
     elif player_total == 10 and dealer_upcard_rank not in [10, 'A']:
-        return "Double Down"
+        return "Double Down" if can_double else "Hit"
     elif player_total == 9 and dealer_upcard_rank in [3, 4, 5, 6]:
-        return "Double Down"
+        return "Double Down" if can_double else "Hit"
     else:
         return "Hit"
     
-def soft_decision(player_hand, dealer_hand):
-    # This logic should work because pairs have already been sorted out
-    player_ranks = [player_hand[0][0], player_hand[1][0]]
-    a_index = player_ranks.index('A') 
-    other_index = a_index - 1 # In a two item list switches 1 to 0 and 0 to -1 (which is 1)
-    non_a_rank = player_hand[other_index][0]
-    #I'm not sure if this needs to handle 3+ card hands, but if it does, I think I just add all the non As?
-    #Don't know what to do with multiple Aces
-
+def soft_decision(player_hand, dealer_hand, can_double, soft_total):
     dealer_upcard_rank = dealer_hand[0][0]
 
     # Decision logic from chart
-    if non_a_rank == '9':
+    if soft_total in ['9', '10']:
         return "Stand"
-    elif non_a_rank == '8' and dealer_upcard_rank == '6':
-        return "Double Down"
-    elif non_a_rank == '8':
+    elif soft_total == '8' and dealer_upcard_rank == '6':
+        return "Double Down" if can_double else "Stand"
+    elif soft_total == '8':
         return "Stand"
-    elif non_a_rank == '7' and dealer_upcard_rank in ['2', '3', '4', '5', '6']:
-        return "Double Down"
-    elif non_a_rank == '7' and dealer_upcard_rank in ['7', '8']:
+    elif soft_total == '7' and dealer_upcard_rank in ['2', '3', '4', '5', '6']:
+        return "Double Down" if can_double else "Stand"
+    elif soft_total == '7' and dealer_upcard_rank in ['7', '8']:
         return "Stand"
-    elif non_a_rank == '6' and dealer_upcard_rank in ['3', '4', '5', '6']:
-        return "Double Down"
-    elif non_a_rank in ['4', '5'] and dealer_upcard_rank in ['4', '5', '6']:
-        return "Double Down"
-    elif non_a_rank in ['2', '3'] and dealer_upcard_rank in ['5', '6']:
-        return "Double Down"
+    elif soft_total == '6' and dealer_upcard_rank in ['3', '4', '5', '6']:
+        return "Double Down" if can_double else "Hit"
+    elif soft_total in ['4', '5'] and dealer_upcard_rank in ['4', '5', '6']:
+        return "Double Down" if can_double else "Hit"
+    elif soft_total in ['2', '3'] and dealer_upcard_rank in ['5', '6']:
+        return "Double Down" if can_double else "Hit"
     else:
         return "Hit"
     
@@ -79,9 +71,59 @@ def split_decision(player_hand, dealer_hand):
     elif card == '4' and dealer_upcard_rank in ['5', '6']:
         return "Split"
     else: 
-        print("Don't Split")  
-        return hard_decision(player_hand, dealer_hand)
+        return "Don't Split"
     
 
 # # Some basic testing
 # print(chart_sorting([['10','H'],['6','H']], [['7','H'],['2','H']]))
+
+#Defining input functions
+
+def get_bet_hardcode(cash):
+    return 100 #Automatically set the bet amount to 100
+
+def get_split_choice(player_hand, dealer_hand): 
+    card = player_hand[0][0] #Either hand would do
+    dealer_upcard_rank = dealer_hand[0][0]
+
+    # Decision logic from chart
+    if card == 'A' or card == '8':
+        return "y"
+    elif card == '9' and (dealer_upcard_rank in ['2', '3', '4', '5', '6', '8', '9']):
+        return "y"
+    elif card in ['7', '3', '2'] and int(dealer_upcard_rank) >= 7:
+        return "y"
+    elif card == '6' and int(dealer_upcard_rank) <= 6:
+        return "y"
+    elif card == '4' and dealer_upcard_rank in ['5', '6']:
+        return "y"
+    else: 
+        return "n"
+    
+def is_soft_total(hand): #it's possible this makes more sense to put in the Logic file
+    #Also, this is so similar to hand_value it's probably redundant somehow but this is the easiest fix
+    total = bj.hand_value(hand)
+    aces = 0
+
+    for card in hand:
+        if card[0] == 'A':
+            aces += 1
+    
+    while total > 21 and aces > 0:
+        total -= 10
+        aces -= 1
+
+    return (aces > 0, total - 11)
+
+    
+def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double):
+    is_soft, soft_total = is_soft_total(player_hand)
+
+    if is_soft:
+        return soft_decision(player_hand, dealer_hand, can_double, soft_total)
+    else:
+        return hard_decision(player_hand, dealer_hand, can_double)
+    
+def get_another_round_hardcode():
+    return input("\nPlay another round? (y/n): ").lower() #Keeping this for now, could make it like a for loop or something
+

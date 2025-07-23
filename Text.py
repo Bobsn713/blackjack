@@ -32,9 +32,11 @@ def get_bet_print(cash, input = input, print = print):
         except ValueError:
             print("Please enter a valid number.")
 
-def get_hit_stand_dd_print(hand, cash, bet):
-    can_double = len(hand) == 2 and cash >= 2 * bet #This is also in Logic.py
+def get_split_choice_print(hand, dealer_hand): #dealer hand is just in there because the hardcode version of the file needs it
+    print(f"\nCurrently considering: {display_hand_print(hand)}")
+    return input("Do you want to split this hand? (y/n) ").lower()
 
+def get_hit_stand_dd_print(hand, dealer_hand, can_double): #dealer hand is in hardcode so that's why its here
     if can_double:
         prompt = "\nDo you want to hit, stand, or double down? "
     else:
@@ -42,10 +44,6 @@ def get_hit_stand_dd_print(hand, cash, bet):
     h_or_s = input(prompt).lower()
 
     return h_or_s
-
-def get_split_choice_print(current_hand):
-    print(f"\nCurrently considering: {display_hand(current_hand)}")
-    return input("Do you want to split this hand? (y/n) ").lower()
 
 def get_another_round_print():
     return input("\nPlay another round? (y/n): ").lower()

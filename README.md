@@ -14,6 +14,8 @@ The goal of this project is first of all to "hardcode" a program that can tell m
 
 **Neural Net.py** will be, predictably, where I train the neural net.
 
+**Performance_Tracker.py** Collects and displays game statistics. 
+
 ### Temporary Files
 
 ---

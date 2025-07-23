@@ -72,3 +72,38 @@ round_state = {
     'Payout' : None, #some number i guess
     'meta_action_history' : ['action1', hand['action_history']] #how should this work?
 }
+
+
+
+
+
+
+
+# Is_soft_total scrap work
+# A, 2, 3   can be 16 or 6, is soft, should return (True, 5)
+# # A, 2, 10  can be only 13, is hard, should return (False, 12? or 13?)
+# hand_1 = [('A', 'H'), ('2', 'H'), ('3', 'H')]
+# hand_2 = [('A', 'H'), ('2', 'H'), ('10', 'H')]
+
+# import Logic as bj
+
+# bj.hand_value(hand_1) #16
+# bj.hand_value(hand_2) #13
+
+# hand_ranks = []
+# for card in hand:
+#     hand_ranks.append(bj.card_value(card))
+
+# for card in hand_ranks: 
+#     if sum(hand_ranks) > 21 and card == 11:
+#         card = 1
+
+# if 11 in hand_ranks:
+#     is_soft = True
+#     soft_total = sum(hand_ranks) - 10
+# else: 
+#     is_soft = False
+#     soft_total = sum(hand_ranks) #this is just the hard total
+
+
+#GOT IT TO WORK!

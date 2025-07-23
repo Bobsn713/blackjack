@@ -25,7 +25,7 @@ def hard_decision(player_hand, dealer_hand, can_double):
     
 def soft_decision(player_hand, dealer_hand, can_double, soft_total):
     dealer_upcard_rank = dealer_hand[0][0]
-    print(f"Soft Total: {soft_total}")
+
     # Decision logic from chart
     if soft_total in [9, 10]:
         return "stand"
@@ -71,18 +71,23 @@ def get_split_choice_hardcode(player_hand, dealer_hand):
     
 def is_soft_total(hand): #it's possible this makes more sense to put in the Logic file
     #Also, this is so similar to hand_value it's probably redundant somehow but this is the easiest fix
-    total = bj.hand_value(hand)
-    aces = 0
-
+    """Returns a tuple (is_soft, total) where total is either soft or hard depending on is_soft"""
+    hand_ranks = []
     for card in hand:
-        if card[0] == 'A':
-            aces += 1
-    
-    while total > 21 and aces > 0:
-        total -= 10
-        aces -= 1
+        hand_ranks.append(bj.card_value(card))
 
-    return (aces > 0, total - 11)
+    for i, card in enumerate(hand_ranks): 
+        if sum(hand_ranks) > 21 and card == 11:
+            hand_ranks[i] = 1
+
+    if 11 in hand_ranks:
+        is_soft = True
+        total = sum(hand_ranks) - 11
+    else: 
+        is_soft = False
+        total = sum(hand_ranks) #this is just the hard total
+    
+    return is_soft, total
 
     
 def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double):

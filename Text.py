@@ -2,18 +2,12 @@
 # and allow it to be played as a text based terminal game
 
 
-### -------------------------------------------------------- ###
-def display(msg): #This is redundant I'm just putting it here now so I don't have to edit everything I'm copying in
-    print(msg)
+# Potentially I should do all the error handling stuff in this instead of Logic.py
+# e.g. "You must enter a number greater than 1"
 
-def get_input(msg): #As above
-    return input(msg)
-
-### -------------------------------------------------------- ###
-
-def emergency_reshuffle():
-        display("Deck ran out, emergency reshuffle")
-        display("(adding 1 new deck)")
+def emergency_reshuffle_print():
+    print("Deck ran out, emergency reshuffle")
+    print("(adding 1 new deck)")
 
         # Will matter for card-counting stuff
 
@@ -24,25 +18,34 @@ def display_hand(hand, hidden=False): #Should this really be a return or should 
         return f'{hand[0][0]}{hand[0][1]}, [X]'
     
 
-def get_bet(cash, get_input = input, display = print):
+def get_bet_print(cash, input = input, print = print):
     while True:
         try:
-            display(f"Cash: {cash}")
-            bet = int(get_input("Bet: "))
+            print(f"Cash: {cash}")
+            bet = int(input("Bet: "))
             if bet <= 0:
-                display("Bet must be positive.")
+                print("Bet must be positive.")
             elif bet > cash:
-                display("You don't have enough money for that bet.")
+                print("You don't have enough money for that bet.")
             else:
                 return bet
         except ValueError:
-            display("Please enter a valid number.")
+            print("Please enter a valid number.")
 
-def get_hit_stand_dd(hand, cash, bet):
-    can_double = len(hand) == 2 and cash >= 2 * bet
+def get_hit_stand_dd_print(hand, cash, bet):
+    can_double = len(hand) == 2 and cash >= 2 * bet #This is also in Logic.py
 
     if can_double:
         prompt = "\nDo you want to hit, stand, or double down? "
     else:
         prompt = "\nDo you want to hit or stand? "
-    h_or_s = get_input(prompt).lower()
+    h_or_s = input(prompt).lower()
+
+    return h_or_s
+
+def get_split_choice_print(current_hand):
+    print(f"\nCurrently considering: {display_hand(current_hand)}")
+    return input("Do you want to split this hand? (y/n) ").lower()
+
+def get_another_round_print():
+    return input("\nPlay another round? (y/n): ").lower()

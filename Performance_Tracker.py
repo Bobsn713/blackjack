@@ -83,10 +83,10 @@ def performance_tracker():
     print(f"Won: {perc_won}%   Push: {perc_push}%   Lost: {perc_lost}%")
     print(f"BJ: {perc_blackjack}%   DD: {perc_doubled_down}%   DD Won: {perc_doubled_down_won}%   DD Lost: {perc_doubled_down_lost}%")
 
-    print(f"\n First 100 Outcomes: {outcomes[:100]}")
-    print(f"\n First 100 Running Total: {running_total[:100]}")
+    #print(f"\n First 100 Outcomes: {outcomes[:100]}")
+    #print(f"\n First 100 Running Total: {running_total[:100]}")
 
-    plt.plot(running_total)
-    plt.show()
+    #plt.plot(running_total)
+    #plt.show()
 
 performance_tracker()

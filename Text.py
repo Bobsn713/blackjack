@@ -11,7 +11,7 @@ def emergency_reshuffle_print():
 
         # Will matter for card-counting stuff
 
-def display_hand(hand, hidden=False): #Should this really be a return or should it print??
+def display_hand_print(hand, hidden=False): #Should this really be a return or should it print??
     if hidden == False:
         return ', '.join(f'{rank}{suit}' for rank, suit in hand)
     else:

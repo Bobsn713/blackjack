@@ -167,7 +167,7 @@ def play_round(
     if hand_value(initial_hand) == 21:
         display("Blackjack!")
         display("Player Wins!")
-        return cash + int(1.5 * bet)
+        return cash + (1.5 * bet)
 
     # --- Refactored Split and Hand Preparation Logic ---
     player_hands_for_decision = [(initial_hand, bet)] # Hands waiting for split decision

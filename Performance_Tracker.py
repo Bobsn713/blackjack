@@ -7,13 +7,27 @@ import matplotlib.pyplot as plt
 def performance_tracker():
     iterations = 10000
     cash = 1000
-    outcomes = []
+
+    #Cash Tracking Lists
+    round_cash_changes = []
+    hand_cash_changes_raw = [] #each entry is one round
+    hand_cash_changes_clean = [] #no sub-lists for each round
+
+    #Outcome Tracking Lists
+    hand_outcomes_raw = [] #each entry is one round
+    hand_outcomes_clean = [] #no sub_lists for each round
+
+    #Split Tracking List
+    is_split_round = []
+
+    #Running Total
+    running_cash_total = []
 
     for i in range(iterations):     
         deck = bj.create_deck()
         bj.shuffle_deck(deck)
 
-        outcome_raw = bj.play_round(
+        return_dict = bj.play_round(
             cash = cash, #infinite cash relative to bet size
             deck = deck, 
             sleep = False, 
@@ -25,66 +39,92 @@ def performance_tracker():
             display_emergency_reshuffle = text.display_emergency_reshuffle_print #Ditto
         )
 
-        outcome = outcome_raw - cash
-        outcomes.append(outcome)
+        #Making Cash Lists
+        hand_cash_change = return_dict['cash_changes']
+        hand_cash_changes_raw.append(hand_cash_change)
+        hand_cash_changes_clean.extend(hand_cash_change)
 
-    cumulative_outcome = sum(outcomes)
-    expected_return_per_hand = cumulative_outcome / iterations
+        round_cash_change = sum(hand_cash_change)
+        round_cash_changes.append(round_cash_change)
 
-    won = 0
-    push = 0
-    lost = 0
-    blackjack = 0
-    doubled_down = 0 #this will be crude because split hands will be in here too
-    doubled_down_won = 0
-    doubled_down_lost = 0
+        #Making Outcome Lists
+        hand_outcomes = return_dict['outcomes']
+        hand_outcomes_raw.append(hand_outcomes)
+        hand_outcomes_clean.extend(hand_outcomes)
 
+        #Determining if hand is split
+        is_split_round.append(len(hand_outcomes) > 1)
 
-    for i, outcome in enumerate(outcomes):
+        #Making Running Total List
         if i == 0:
-            running_total = [outcome]
+            running_cash_total.append(round_cash_change)
         else: 
-            running_total.append(running_total[i-1] + outcome) 
-        if outcome > 0:
-            won += 1
+            running_cash_total.append(running_cash_total[i-1] + round_cash_change)
 
-            if outcome == 1.5:
-                blackjack += 1
-            elif outcome == 2:
-                doubled_down += 1
-                doubled_down_won += 1
-        elif outcome == 0:
-            push += 1
-        else: 
-            lost += 1
+        #Another thing to potentially add is keeping track of which hands are splits and doubles
 
-            if outcome == -2:
-                doubled_down += 1
-                doubled_down_lost += 1
+    # Cumulative Stats
+    cumulative_cash_change = sum(round_cash_changes)
+    expected_return_per_hand = cumulative_cash_change / iterations
+    total_hands = len(hand_outcomes_clean)
 
-    doubled_down_push = doubled_down - doubled_down_won - doubled_down_lost
+    #Outcome Counters
+    p_bj = hand_outcomes_clean.count('Player Blackjack')
+    push_bj = hand_outcomes_clean.count('Blackjack Push')
+    d_bj = hand_outcomes_clean.count('Dealer Blackjack')
+    p_bust = hand_outcomes_clean.count('Player Bust')
+    d_bust = hand_outcomes_clean.count('Dealer Bust')
+    p_higher = hand_outcomes_clean.count('Player Higher')
+    d_higher = hand_outcomes_clean.count('Dealer Higher')
+    push_excl = hand_outcomes_clean.count('Push') #not including push_bjs
 
-    perc_won = round((won / iterations) * 100, 2)
-    perc_push = round((push / iterations) * 100, 2)
-    perc_lost = round((lost / iterations) * 100, 2)
+    #W/L/P Counters
+    won = p_bj + d_bust + p_higher
+    lost = d_bj + p_bust + d_higher
+    push_incl = push_bj + push_excl #including push_bjs
 
-    perc_blackjack = round((blackjack / iterations) * 100, 2)
-    perc_doubled_down = round((doubled_down / iterations) * 100, 2)
-    perc_doubled_down_won = round((doubled_down_won / doubled_down) * 100, 2)
-    perc_doubled_down_lost = round((doubled_down_lost / doubled_down) * 100, 2)
+    #How do I want to do splits and double downs? 
+    #Do I want stats for within those?
+    split_hands = len(hand_outcomes_clean) - len(hand_outcomes_raw)
+    double_downs = hand_cash_changes_clean.count(2) + hand_cash_changes_clean.count(-2)
+    
+
+    #Percents with demoninator total_hands
+    perc_won = round((won / total_hands) * 100, 2)
+    perc_push_incl= round((push_incl/ total_hands) * 100, 2)
+    perc_lost = round((lost / total_hands) * 100, 2)
+
+    perc_p_bj = round((p_bj / total_hands) * 100, 2) 
+    perc_push_bj = round((push_bj / total_hands) * 100, 2)
+    perc_d_bj = round((d_bj / total_hands) * 100, 2)
+    perc_p_bust = round((p_bust / total_hands) * 100, 2)
+    perc_d_bust = round((d_bust / total_hands) * 100, 2)
+    perc_p_higher = round((p_higher / total_hands) * 100, 2)
+    perc_d_higher = round((d_higher / total_hands) * 100, 2)
+    perc_push_excl = round((push_excl / total_hands) * 100, 2)
+
+    perc_split_hands = round((split_hands / total_hands) * 100, 2)
+    perc_double_downs = round((double_downs / total_hands) * 100, 2)
+
+
+
 
     print(f"Results of {iterations} iterations...")
-    print(f"Cumulative Outcome: {cumulative_outcome}")
+    print(f"Cumulative Outcome: {cumulative_cash_change}")
     print(f"Expected Return (per hand): {expected_return_per_hand}")
-    print(f"Won: {won}   Push: {push}   Lost: {lost}")
-    print(f"BJ: {blackjack}   DD: {doubled_down}   DD Won: {doubled_down_won}   DD Lost: {doubled_down_lost}")
+    print()
+    print(f"Won: {won}   Push: {push_incl}   Lost: {lost}")
+    print(f"Player BJ: {p_bj}   BJ Push: {push_bj}   Dealer BJ: {d_bj}")
+    print(f"Player Bust: {p_bust}   Dealer Bust: {d_bust}")
+    print(f"Player Higher: {p_higher}   Dealer Higher: {d_higher}   Non-BJ Push: {push_excl}")
+    print(f"Split Hands: {split_hands}   Doubled Down Hands: {double_downs}")
     print()
     print("Percentages:")
-    print(f"Won: {perc_won}%   Push: {perc_push}%   Lost: {perc_lost}%")
-    print(f"BJ: {perc_blackjack}%   DD: {perc_doubled_down}%   DD Won: {perc_doubled_down_won}%   DD Lost: {perc_doubled_down_lost}%")
-
-    #print(f"\n First 100 Outcomes: {outcomes[:100]}")
-    #print(f"\n First 100 Running Total: {running_total[:100]}")
+    print(f"Won: {perc_won}%   Push: {perc_push_incl}%   Lost: {perc_lost}%")
+    print(f"Player BJ: {perc_p_bj}%   BJ Push: {perc_push_bj}%   Dealer BJ: {perc_d_bj}%")
+    print(f"Player Bust: {perc_p_bust}%   Dealer Bust: {perc_d_bust}%")
+    print(f"Player Higher: {perc_p_higher}%   Dealer Higher: {perc_d_higher}%   Non-BJ Push: {perc_push_excl}%")
+    print(f"Split Hands: {perc_split_hands}%   Doubled Down Hands: {perc_double_downs}%")
 
     #plt.plot(running_total)
     #plt.show()

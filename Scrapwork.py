@@ -189,7 +189,7 @@ print(bj.play_round(
 # 'is_split' #would be redundant, could just do len(e.g. cash_changes)
 
 #Here's a sample print from a max split hand
-{'cash_change': 3, 
+{
  'cash_changes': [1, 2, 1, -1], 
  'player_hands': [[('8', 'H'), ('10', 'H')], 
                   [('8', 'H'), ('7', 'D'), ('A', 'H')], 
@@ -197,3 +197,5 @@ print(bj.play_round(
                   [('8', 'D'), ('J', 'C'), ('Q', 'S')]], 
 'dealer_hand': [('8', 'C'), ('8', 'S'), ('9', 'H')], 
 'outcomes': ['Dealer Bust', 'Dealer Bust', 'Dealer Bust', 'Player Bust']}
+
+#Possible Outcomes 'Blackjack Push', 'Dealer Blackjack', 'Player Blackjack', 'Player Bust', 'Dealer Bust', 'Player Higher', 'Dealer Higher', 'Push'

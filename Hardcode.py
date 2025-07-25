@@ -6,43 +6,43 @@ import Text as text
 
 def hard_decision(player_hand, dealer_hand, can_double):
     player_total = bj.hand_value(player_hand)
-    dealer_upcard_rank = dealer_hand[0][0]
+    dealer_upcard_value = bj.card_value(dealer_hand[0])
 
     # Decision logic from chart
     if player_total >= 17:
         return "stand"
-    elif player_total >= 13 and dealer_upcard_rank in [2, 3, 4, 5, 6]:
+    elif player_total >= 13 and dealer_upcard_value in [2, 3, 4, 5, 6]:
         return "stand"
-    elif player_total == 12 and dealer_upcard_rank in [4, 5, 6]:
+    elif player_total == 12 and dealer_upcard_value in [4, 5, 6]:
         return "stand"
     elif player_total == 11:
         return "double down" if can_double else "hit"
-    elif player_total == 10 and dealer_upcard_rank not in [10, 'A']:
+    elif player_total == 10 and dealer_upcard_value not in [10, 11]:
         return "double down" if can_double else "hit"
-    elif player_total == 9 and dealer_upcard_rank in [3, 4, 5, 6]:
+    elif player_total == 9 and dealer_upcard_value in [3, 4, 5, 6]:
         return "double down" if can_double else "hit"
     else:
         return "hit"
     
 def soft_decision(player_hand, dealer_hand, can_double, soft_total):
-    dealer_upcard_rank = dealer_hand[0][0]
+    dealer_upcard_value = bj.card_value(dealer_hand[0])
 
     # Decision logic from chart
     if soft_total in [9, 10]:
         return "stand"
-    elif soft_total == 8 and dealer_upcard_rank == '6':
+    elif soft_total == 8 and dealer_upcard_value == 6:
         return "double down" if can_double else "stand"
     elif soft_total == 8:
         return "stand"
-    elif soft_total == 7 and dealer_upcard_rank in ['2', '3', '4', '5', '6']:
+    elif soft_total == 7 and dealer_upcard_value in [2, 3, 4, 5, 6]:
         return "double down" if can_double else "stand"
-    elif soft_total == 7 and dealer_upcard_rank in ['7', '8']:
+    elif soft_total == 7 and dealer_upcard_value in [7, 8]:
         return "stand"
-    elif soft_total == 6 and dealer_upcard_rank in ['3', '4', '5', '6']:
+    elif soft_total == 6 and dealer_upcard_value in [3, 4, 5, 6]:
         return "double down" if can_double else "hit"
-    elif soft_total in [4, 5] and dealer_upcard_rank in ['4', '5', '6']:
+    elif soft_total in [4, 5] and dealer_upcard_value in [4, 5, 6]:
         return "double down" if can_double else "hit"
-    elif soft_total in [2, 3] and dealer_upcard_rank in ['5', '6']:
+    elif soft_total in [2, 3] and dealer_upcard_value in [5, 6]:
         return "double down" if can_double else "hit"
     else:
         return "hit"
@@ -54,7 +54,7 @@ def get_bet_hardcode(cash):
 
 def get_split_choice_hardcode(player_hand, dealer_hand): 
     card = player_hand[0][0] #Either hand would do
-    dealer_upcard_value = bj.card_value(dealer_hand[0])
+    dealer_upcard_value = bj.card_value(dealer_hand[0]) #Is it confusing that this is the only place we do value instead of dealer upcard as a string? 
 
     # Decision logic from chart
     if card == 'A' or card == '8':
@@ -103,4 +103,5 @@ def get_another_round_hardcode():
     return input("\nPlay another round? (y/n): ").lower() #Keeping this for now, could make it like a for loop or something
 
 def display_hardcode(msg):
-    return msg
+    return
+

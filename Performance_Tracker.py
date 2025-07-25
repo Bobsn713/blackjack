@@ -36,7 +36,8 @@ def performance_tracker():
             display = hc.display_hardcode, 
             get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
-            display_emergency_reshuffle = text.display_emergency_reshuffle_print #Ditto
+            display_emergency_reshuffle = text.display_emergency_reshuffle_print, #Ditto
+            display_final_results = hc.display_hardcode
         )
 
         #Making Cash Lists
@@ -109,8 +110,8 @@ def performance_tracker():
 
 
 
-    print(f"Results of {iterations} iterations...")
-    print(f"Cumulative Outcome: {cumulative_cash_change}")
+    print(f"\nResults of {iterations} iterations...")
+    print(f"Cumulative Outcome: {cumulative_cash_change} units")
     print(f"Expected Return (per hand): {expected_return_per_hand}")
     print()
     print(f"Won: {won}   Push: {push_incl}   Lost: {lost}")
@@ -126,7 +127,7 @@ def performance_tracker():
     print(f"Player Higher: {perc_p_higher}%   Dealer Higher: {perc_d_higher}%   Non-BJ Push: {perc_push_excl}%")
     print(f"Split Hands: {perc_split_hands}%   Doubled Down Hands: {perc_double_downs}%")
 
-    #plt.plot(running_total)
-    #plt.show()
+    plt.plot(running_cash_total)
+    plt.show()
 
 performance_tracker()

@@ -137,7 +137,8 @@ def play_round(
     display,
     get_hit_stand_dd,
     display_hand,
-    display_emergency_reshuffle
+    display_emergency_reshuffle, 
+    display_final_results
 ):
     outcomes = [] # is this where I should make this? 
 
@@ -169,7 +170,7 @@ def play_round(
                     'dealer_hand': dealer_hand, 
                     'outcomes' : ['Blackjack Push']}
             
-            text.display_final_results_print(round_results)
+            display_final_results(round_results)
             return round_results
         
         else:
@@ -183,7 +184,7 @@ def play_round(
                     'dealer_hand': dealer_hand, 
                     'outcomes' : ['Dealer Blackjack']}
             
-            text.display_final_results_print(round_results)
+            display_final_results(round_results)
             return round_results
 
     # Check for player blackjack
@@ -199,7 +200,7 @@ def play_round(
                 'dealer_hand': dealer_hand, 
                 'outcomes' : ['Player Blackjack']}
 
-        text.display_final_results_print(round_results)
+        display_final_results(round_results)
         return round_results
 
     # --- Refactored Split and Hand Preparation Logic ---
@@ -278,6 +279,7 @@ def play_round(
                 'final': False
             }
         else:
+            #is it getting called?
             hand_result = play_individual_hand(
                                             hand,
                                             deck,
@@ -349,6 +351,7 @@ def play_round(
                 outcomes.append('Dealer Bust')
             elif player_total > dealer_total:
                 cash_changes.append(bet_amount)
+                outcomes.append('Player Higher')
             elif player_total < dealer_total:
                 cash_changes.append(-bet_amount)
                 outcomes.append('Dealer Higher')
@@ -357,13 +360,13 @@ def play_round(
                 outcomes.append('Push')
     
     round_results = { 
-            'cash_changes': cash_changes, #list
+            'cash_changes': [int(cash_change) for cash_change in cash_changes], #list
             'player_hands' : [d['hand'] for d in hand_results], #list
             'dealer_hand': dealer_hand, 
-            'outcomes' : [int(outcome) for outcome in outcomes] #list
+            'outcomes' : outcomes #list
             }
     
-    text.display_final_results_print(round_results)
+    display_final_results(round_results)
     return round_results
 
 
@@ -375,7 +378,8 @@ def play_game(
     get_hit_stand_dd,
     display_hand,
     display_emergency_reshuffle,
-    sleep
+    sleep,
+    display_final_results
 ):
 
     cash = starting_cash
@@ -385,16 +389,16 @@ def play_game(
     deck_len = len(deck)
     reshuffle_point = int(deck_len / 4)
 
-    ### SPECIAL TESTING CODE
-    cards_to_add = list(reversed([
-        ('A', 'H'), ('10', 'D'),   # Player initial hand (8,8)
-        ('8', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
-        ('8', 'H'), ('8', 'D'),   # Further split hands
-        ('10', 'H'), ('7', 'D')   # Dealer cards
-    ]))
+    # ### SPECIAL TESTING CODE
+    # cards_to_add = list(reversed([
+    #     ('3', 'H'), ('10', 'D'),   # Player initial hand (8,8)
+    #     ('Q', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+    #     ('7', 'H'), ('8', 'D'),   # Further split hands
+    #     ('10', 'H'), ('7', 'D')   # Dealer cards
+    # ]))
 
-    deck.extend(cards_to_add)
-    ###SPECIAL TESTING CODE ^^^^^^^
+    # deck.extend(cards_to_add)
+    # ###SPECIAL TESTING CODE ^^^^^^^
 
     #Just for formatting
     display("\n") #Do I need this?
@@ -409,7 +413,8 @@ def play_game(
                     display,
                     get_hit_stand_dd,
                     display_hand,
-                    display_emergency_reshuffle)
+                    display_emergency_reshuffle, 
+                    display_final_results)
 
         cash = cash + sum(result_dict['cash_changes'])
 
@@ -439,7 +444,9 @@ def run_text_mode():
         get_hit_stand_dd             = text.get_hit_stand_dd_print,
         display_hand                 = text.display_hand_print,
         display_emergency_reshuffle  = text.display_emergency_reshuffle_print,
-        sleep                        = True
+        sleep                        = True,
+        display_final_results        = text.display_final_results_print
+
     )
 
 def run_hardcode_mode(game_or_round):
@@ -456,6 +463,7 @@ def run_hardcode_mode(game_or_round):
     display_hand                   = text.display_hand_print           # or hc.display_hand_hardcode
     display_emergency_reshuffle    = text.display_emergency_reshuffle_print    # or hc.emergency_reshuffle_hardcode
     sleep                          = False
+    display_final_results          = text.display_final_results_print
 
     if game_or_round == 'game':
         play_game(
@@ -466,7 +474,8 @@ def run_hardcode_mode(game_or_round):
             get_hit_stand_dd,               
             display_hand,                   
             display_emergency_reshuffle,    
-            sleep                          
+            sleep, 
+            display_final_results                          
         )
     elif game_or_round == 'round':
         deck = create_deck()
@@ -481,11 +490,12 @@ def run_hardcode_mode(game_or_round):
             display, 
             get_hit_stand_dd, 
             display_hand, 
-            display_emergency_reshuffle
+            display_emergency_reshuffle, 
+            display_final_results
         )
     else: 
         raise ValueError("Pass either 'game' or 'round as arguments to 'run_hardcode_mode()'")
 
 
 if __name__ == "__main__":
-    run_text_mode()
+    run_hardcode_mode('game')

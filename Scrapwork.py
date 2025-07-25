@@ -151,28 +151,28 @@ bj.shuffle_deck(deck)
 
 
 
-cards_to_add = list(reversed([
-    ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
-    ('8', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
-    ('8', 'H'), ('8', 'D'),   # Further split hands
-    ('10', 'H'), ('7', 'D')   # Dealer cards
-]))
+# cards_to_add = list(reversed([
+#     ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
+#     ('8', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+#     ('8', 'H'), ('8', 'D'),   # Further split hands
+#     ('10', 'H'), ('7', 'D')   # Dealer cards
+# ]))
 
-deck.extend(cards_to_add)
+# deck.extend(cards_to_add)
 
 
 
-print(bj.play_round(
-    cash = 1000,
-    deck = deck,
-    sleep = False,
-    get_bet = lambda cash: 1,
-    get_split_choice = text.get_split_choice_print,
-    display = print,
-    get_hit_stand_dd = text.get_hit_stand_dd_print,
-    display_hand = text.display_hand_print,
-    display_emergency_reshuffle = text.display_emergency_reshuffle_print
-))
+# print(bj.play_round(
+#     cash = 1000,
+#     deck = deck,
+#     sleep = False,
+#     get_bet = lambda cash: 1,
+#     get_split_choice = text.get_split_choice_print,
+#     display = print,
+#     get_hit_stand_dd = text.get_hit_stand_dd_print,
+#     display_hand = text.display_hand_print,
+#     display_emergency_reshuffle = text.display_emergency_reshuffle_print
+# ))
 
 
 # The following is the dictionary returned by play_round

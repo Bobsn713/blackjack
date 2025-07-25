@@ -36,7 +36,7 @@ def performance_tracker():
             display = hc.display_hardcode, 
             get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
-            display_emergency_reshuffle = text.display_emergency_reshuffle_print, #Ditto
+            display_emergency_reshuffle = text.display_hand_print, #Ditto
             display_final_results = hc.display_hardcode
         )
 

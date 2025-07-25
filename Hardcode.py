@@ -1,5 +1,4 @@
-import Logic as bj    
-import Text as text
+import Logic as bj
 
 #I think it's fine but it may be more like technically fair if these functions only get
 # passed the dealer's upcard and not his whole hand (maybe more relevant for NN?)
@@ -102,6 +101,6 @@ def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double):
 def get_another_round_hardcode():
     return input("\nPlay another round? (y/n): ").lower() #Keeping this for now, could make it like a for loop or something
 
-def display_hardcode(msg):
-    return
+def display_hardcode(msg): #Maybe worth renaming for generality, but it fits my current sytem
+    return #just doesn't print anything! That's it!
 

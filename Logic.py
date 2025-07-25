@@ -156,32 +156,51 @@ def play_round(
 
     # Check for dealer blackjack first
     if hand_value(dealer_hand) == 21:
-        
         if hand_value(initial_hand) == 21:
-            display("Push - both have blackjack")
-            results_dict = {  #IF IM NOT GONNA RETURN THESE HERE, I NEED TO DO SOME WORK ON THE PRINTING
-                    'cash_changes' : [0],       #THIS WILL STILL ASK IF I WANT TO HIT AFTER DECLARING BLACKJACK
+            #NOTE: I kind of like the idea of printing blackjack results before the ===FINAL RESULTS=== Section
+            #But to keep things simple I'm commenting all of that out for now. 
+            # display("Push - both have blackjack")
+            # display(f"\nPlayer hand: {display_hand(initial_hand)}")
+            # display(f"Dealer hand: {display_hand(dealer_hand)}")
+
+            round_results = {
+                    'cash_changes' : [0],
                     'player_hands' : [initial_hand],
                     'dealer_hand': dealer_hand, 
                     'outcomes' : ['Blackjack Push']}
+            
+            text.display_final_results_print(round_results)
+            return round_results
+        
         else:
-            display("Dealer Blackjack!")
-            display("Dealer Wins!")
-            results_dict = { 
+            # display("Dealer Blackjack!")
+            # display("Dealer Wins!")
+            # display(f"Dealer hand: {display_hand(dealer_hand)}")
+
+            round_results = { 
                     'cash_changes' : [-bet],
                     'player_hands' : [initial_hand],
                     'dealer_hand': dealer_hand, 
                     'outcomes' : ['Dealer Blackjack']}
+            
+            text.display_final_results_print(round_results)
+            return round_results
 
     # Check for player blackjack
     if hand_value(initial_hand) == 21:
-        display("Blackjack!")
-        display("Player Wins!")
-        results_dict = { 
-                'cash_changes': [1.5 * bet],
+        # display("Blackjack!")
+        # display("Player Wins!")
+        # display(f"\nPlayer hand: {display_hand(initial_hand)}")
+        # display(f"Dealer hand: {display_hand(dealer_hand)}")
+
+        round_results = { 
+                'cash_changes': [int(1.5 * bet)],
                 'player_hands' : [initial_hand],
                 'dealer_hand': dealer_hand, 
                 'outcomes' : ['Player Blackjack']}
+
+        text.display_final_results_print(round_results)
+        return round_results
 
     # --- Refactored Split and Hand Preparation Logic ---
     player_hands_for_decision = [(initial_hand, bet)] # Hands waiting for split decision
@@ -244,7 +263,7 @@ def play_round(
 
         if is_split_ace_initial:
             display("Split Aces: This hand received one card and must stand.")
-            result = {
+            hand_result = {
                 'hand': hand,
                 'result': 'stand',
                 'bet_multiplier': 1,
@@ -252,14 +271,14 @@ def play_round(
             }
         elif hand_value(hand) == 21 and is_split_game and len(hand) == 2 and hand[0][0] == 'A': #redundant?
             display("Split Aces: You got 21 with your second card. You must stand.")
-            result = {
+            hand_result = {
                 'hand': hand,
                 'result': 'stand',
                 'bet_multiplier': 1,
                 'final': False
             }
         else:
-            result = play_individual_hand(
+            hand_result = play_individual_hand(
                                             hand,
                                             deck,
                                             bet,
@@ -270,10 +289,10 @@ def play_round(
                                             display_emergency_reshuffle, 
                                             display_hand)
             
-        hand_results.append(result)
+        hand_results.append(hand_result)
 
     # Check if any hands need dealer comparison
-    need_dealer = any(not result['final'] for result in hand_results)
+    need_dealer = any(not hand_result['final'] for hand_result in hand_results)
 
     # Play dealer's hand only if needed
     if need_dealer:
@@ -297,84 +316,55 @@ def play_round(
         if dealer_total > 21:
             display("Dealer Busts!")
             
-            # for result in hand_results:
+            # for hand_result in hand_results:
             #     if result['final']:
             #         outcomes.append(result['result'])
             #     else:
             #         outcomes.append("Dealer Bust")
 
-            results_dict = { # I have to change this because its returning too early and not printing final results
+            round_results = { # I have to change this because its returning too early and not printing final results
                     'cash_changes': [bet], #is this bad because it can't handle split hands? 
                     'player_hands' : [d['hand'] for d in hand_results],
                     'dealer_hand': dealer_hand, 
                     'outcomes' : outcomes}
-    else: #what is this doing?
-        dealer_total = hand_value(dealer_hand)
-
-
-    # Calculate and display final results
-    total_cash_change = 0
     
     if sleep == True:
         time.sleep(1)
 
-    display("\n" + "="*40)
-    display("FINAL RESULTS")
-    display("="*40)
-
     cash_changes = []
 
-    for i, result in enumerate(hand_results):
-        hand = result['hand']
+    for i, hand_result in enumerate(hand_results):
+        hand = hand_result['hand']
         player_total = hand_value(hand)
-        bet_amount = bet * result['bet_multiplier'] # Use original bet for multiplier
-
-        # Determine hand label
-        if is_split_game:
-            hand_label = f"Hand {i+1}"
-        else:
-            hand_label = "Your hand"
-            
-        display(f"\n{hand_label}: {display_hand(hand)} (Total: {player_total})")
+        bet_amount = bet * hand_result['bet_multiplier'] # Use original bet for multiplier
         
         # Calculate outcome
-        if result['final']:  # Already resolved (bust)
-            if result['result'] == 'Player Bust': #redundant?
-                display(f"Result: BUST - LOSS (-${bet_amount})")
+        if hand_result['final']:  # Already resolved (bust)
+            if hand_result['result'] == 'Player Bust': #redundant?
                 cash_changes.append(-bet_amount)
-                total_cash_change -= bet_amount
                 outcomes.append('Player Bust')
         else:  # Compare with dealer
-            display(f"Dealer hand: {display_hand(dealer_hand)} (Total: {hand_value(dealer_hand)})")
-            
             if dealer_total > 21:
-                display(f"Result: DEALER BUST - WIN (+${bet_amount})")
                 cash_changes.append(bet_amount)
-                total_cash_change += bet_amount
                 outcomes.append('Dealer Bust')
             elif player_total > dealer_total:
-                display(f"Result: WIN (+${bet_amount})")
                 cash_changes.append(bet_amount)
-                total_cash_change += bet_amount
-                outcomes.append('Player Higher')
             elif player_total < dealer_total:
-                display(f"Result: LOSS (-${bet_amount})")
                 cash_changes.append(-bet_amount)
-                total_cash_change -= bet_amount
                 outcomes.append('Dealer Higher')
             else:
-                display(f"Result: PUSH (+$0)")
                 cash_changes.append(0)
                 outcomes.append('Push')
     
-    display(f"\nNet change: {'+' if total_cash_change >= 0 else ''}${total_cash_change}")
-    results_dict = { 
+    round_results = { 
             'cash_changes': cash_changes, #list
             'player_hands' : [d['hand'] for d in hand_results], #list
             'dealer_hand': dealer_hand, 
-            'outcomes' : outcomes #list
+            'outcomes' : [int(outcome) for outcome in outcomes] #list
             }
-    return results_dict
+    
+    text.display_final_results_print(round_results)
+    return round_results
 
 
 def play_game(
@@ -397,7 +387,7 @@ def play_game(
 
     ### SPECIAL TESTING CODE
     cards_to_add = list(reversed([
-        ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
+        ('A', 'H'), ('10', 'D'),   # Player initial hand (8,8)
         ('8', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
         ('8', 'H'), ('8', 'D'),   # Further split hands
         ('10', 'H'), ('7', 'D')   # Dealer cards

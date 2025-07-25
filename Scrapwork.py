@@ -107,3 +107,95 @@ round_state = {
 
 
 #GOT IT TO WORK!
+
+
+
+
+
+
+# Doing some testing of what output looks like from different functions
+import Logic as bj
+import Text as text
+
+deck = bj.create_deck()
+bj.shuffle_deck(deck)
+
+#If I need to customize the deck, steal the append code thats commented out in Logic
+
+# print(bj.play_individual_hand(
+#     hand = [('A', 'H'), ('10', 'H')],
+#     deck = deck,
+#     bet = 1,
+#     cash = 1000,
+#     dealer_hand = [('6', 'H'), ('10', 'H')],
+#     get_hit_stand_dd = text.get_hit_stand_dd_print,
+#     display = print, 
+#     display_emergency_reshuffle = text.display_emergency_reshuffle_print,
+#     display_hand = text.display_hand_print
+# ))
+
+#returns 
+# dictionary{
+#   'hand': [('A', 'H'), ('10', 'H'), ('Q', 'D')], 
+#   'result': 'stand', 
+#   'bet_multiplier': 1, 
+#   'final': False
+#}
+
+# Hand is the hand at the conclusion of the player's turn
+# Result possibilities are 'bust', 'stand', 'doubled'
+# If you double down and bust, the result is 'bust' not 'double'
+# Bet_multiplier is 1 unless you double down in which case it's 2
+# Final is True if busted (no need to compare with dealer), False otherwise
+
+
+
+
+# cards_to_add = list(reversed([
+#     ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
+#     ('8', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+#     ('8', 'H'), ('8', 'D'),   # Further split hands
+#     ('10', 'H'), ('7', 'D')   # Dealer cards
+# ]))
+
+# deck.extend(cards_to_add)
+
+
+
+# print(bj.play_round(
+#     cash = 1000,
+#     deck = deck,
+#     sleep = False,
+#     get_bet = lambda cash: 1,
+#     get_split_choice = text.get_split_choice_print,
+#     display = print,
+#     get_hit_stand_dd = text.get_hit_stand_dd_print,
+#     display_hand = text.display_hand_print,
+#     display_emergency_reshuffle = text.display_emergency_reshuffle_print
+# ))
+
+
+# The following is the dictionary returned by play_round
+# dictionary = {'cash_change': total_cash_change, 
+#               'cash_changes': cash_changes, #list
+#               'player_hands' : hand_results, #dictionary returned by play_individual_hand (UNLESS BLACKJACK, WILL HAVE TO FIX THIS)
+#               'dealer_hand': dealer_hand, 
+#               'outcomes' : outcomes #list
+# }
+
+#Notes: Cash change is redundant (can do sum of cash changes)
+# Other potential rows: 
+# 'win_loss_push' # would be redundant, all info in cash_changes and outcomes
+# 'is_split' #would be redundant, could just do len(e.g. cash_changes)
+
+#Here's a sample print from a max split hand
+{
+ 'cash_changes': [1, 2, 1, -1], 
+ 'player_hands': [[('8', 'H'), ('10', 'H')], 
+                  [('8', 'H'), ('7', 'D'), ('A', 'H')], 
+                  [('8', 'D'), ('J', 'S')], 
+                  [('8', 'D'), ('J', 'C'), ('Q', 'S')]], 
+'dealer_hand': [('8', 'C'), ('8', 'S'), ('9', 'H')], 
+'outcomes': ['Dealer Bust', 'Dealer Bust', 'Dealer Bust', 'Player Bust']}
+
+#Possible Outcomes 'Blackjack Push', 'Dealer Blackjack', 'Player Blackjack', 'Player Bust', 'Dealer Bust', 'Player Higher', 'Dealer Higher', 'Push'

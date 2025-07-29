@@ -5,6 +5,7 @@ import random
 import time 
 import Text as text
 import Hardcode as hc
+import NN_Imitation as imit
 
 # Generate a deck of cards
 suits = ['H', 'D', 'C', 'S']
@@ -391,9 +392,9 @@ def play_game(
 
     # ### SPECIAL TESTING CODE
     # cards_to_add = list(reversed([
-    #     ('3', 'H'), ('10', 'D'),   # Player initial hand (8,8)
-    #     ('Q', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
-    #     ('7', 'H'), ('8', 'D'),   # Further split hands
+    #     ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
+    #     ('10', 'C'), ('10', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+    #     ('10', 'H'), ('10', 'D'),   # Further split hands
     #     ('10', 'H'), ('7', 'D')   # Dealer cards
     # ]))
 
@@ -458,8 +459,8 @@ def run_hardcode_mode(game_or_round):
     get_another_round              = hc.get_another_round_hardcode
     display                        = print
     get_bet                        = hc.get_bet_hardcode
-    get_split_choice               = hc.get_split_choice_hardcode
-    get_hit_stand_dd               = hc.get_hit_stand_dd_hardcode
+    get_split_choice               = imit.get_split_choice_csv #temporarily changed from hc.get_split_choice_hardcode
+    get_hit_stand_dd               = imit.get_hit_stand_dd_csv #temporarily changed from hc.get_hit_stand_dd_hardcode
     display_hand                   = text.display_hand_print           # or hc.display_hand_hardcode
     display_emergency_reshuffle    = text.display_emergency_reshuffle_print    # or hc.emergency_reshuffle_hardcode
     sleep                          = False

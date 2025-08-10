@@ -38,6 +38,8 @@ def get_split_choice_csv(player_hand, dealer_hand):
     return result 
 
 def get_hit_stand_dd_csv(player_hand, dealer_hand, can_double):
+    #It may be a bit confusing that this is a 'get' function when its purpose is to print
+    #But it gets called when its the right time to call the 'get' hardcode function, so that's why
     result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double)
     dealer_upcard = dealer_hand[0]
 
@@ -50,6 +52,10 @@ def get_hit_stand_dd_csv(player_hand, dealer_hand, can_double):
     return result
 
 def imitation_loop(iterations):
+    # By replacing get_split_choice and get_hit_stand_dd from their hardcode defaults to the local csv versions,
+    # this function generates csv data. 
+
+    #I could make it a little prettier, and put in some if statements to make it clearer what was going on
     for _ in range(iterations):     
         deck = bj.create_deck()
         bj.shuffle_deck(deck)
@@ -59,12 +65,12 @@ def imitation_loop(iterations):
             deck = deck, 
             sleep = False, 
             get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-            get_split_choice = get_split_choice_csv, 
+            get_split_choice = hc.get_split_choice_hardcode, #get_split_choice_csv, 
             display = hc.display_hardcode, 
-            get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, #get_hit_stand_dd_csv, 
+            get_hit_stand_dd = get_hit_stand_dd_csv, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
             display_emergency_reshuffle = text.display_hand_print, #Ditto
             display_final_results = hc.display_hardcode
         )
 
-imitation_loop(800000) #10,000
+imitation_loop(100000) #10,000

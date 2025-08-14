@@ -3,6 +3,7 @@ import Logic as bj
 import Hardcode as hc
 import Text as text
 import matplotlib.pyplot as plt
+from Imitation import Imitation_Util as imit
 
 def performance_tracker():
     iterations = 10000
@@ -32,9 +33,9 @@ def performance_tracker():
             deck = deck, 
             sleep = False, 
             get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-            get_split_choice = hc.get_split_choice_hardcode, 
+            get_split_choice = imit.get_split_choice_imit, #hc.get_split_choice_hardcode, 
             display = hc.display_hardcode, 
-            get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, 
+            get_hit_stand_dd = imit.get_hit_stand_dd_imit, #hc.get_hit_stand_dd_hardcode, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
             display_emergency_reshuffle = text.display_hand_print, #Ditto
             display_final_results = hc.display_hardcode
@@ -129,5 +130,43 @@ def performance_tracker():
 
     plt.plot(running_cash_total)
     plt.show()
+
+#### Temp Fix ####
+# I need access to the model definitions so I'm just copying them in here. 
+from torch import nn
+class sn_NeuralNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(26, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+        )
+
+    def forward(self, x):
+        x = self.flatten(x)
+        logits = self.linear_relu_stack(x)
+        return logits
+    
+class hsd_NeuralNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(105, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, 3),
+        )
+
+    def forward(self, x):
+        x = self.flatten(x)
+        logits = self.linear_relu_stack(x)
+        return logits
+#####################
 
 performance_tracker()

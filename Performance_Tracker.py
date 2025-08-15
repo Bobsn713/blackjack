@@ -1,9 +1,13 @@
-# I was getting import circularity errors so I'm making a separate Performance tracker file
 import Logic as bj
 import Hardcode as hc
 import Text as text
 import matplotlib.pyplot as plt
 from Imitation import Imitation_Util as imit
+
+# 3 good ways to improve this:
+# 1. Make it dynamcic so I can test it on either hardcode or imit just by passing it an argument. 
+# 2. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
+# 3. Make it so that it can play through decks instead of just through rounds. This will eventually make it so I can factor in card-counting strategies. 
 
 def performance_tracker():
     iterations = 10000

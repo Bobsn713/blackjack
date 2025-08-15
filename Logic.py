@@ -1,5 +1,3 @@
-# Rewriting Play_v5.py to be agnostic about display/output
-
 # Import libraries
 import random
 import time 

@@ -1,5 +1,3 @@
-# Rewriting Play_v5.py to be agnostic about display/output
-
 # Import libraries
 import random
 import time 
@@ -391,9 +389,9 @@ def play_game(
 
     # ### SPECIAL TESTING CODE
     # cards_to_add = list(reversed([
-    #     ('3', 'H'), ('10', 'D'),   # Player initial hand (8,8)
-    #     ('Q', 'C'), ('8', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
-    #     ('7', 'H'), ('8', 'D'),   # Further split hands
+    #     ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
+    #     ('10', 'C'), ('10', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+    #     ('10', 'H'), ('10', 'D'),   # Further split hands
     #     ('10', 'H'), ('7', 'D')   # Dealer cards
     # ]))
 

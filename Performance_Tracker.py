@@ -1,8 +1,13 @@
-# I was getting import circularity errors so I'm making a separate Performance tracker file
 import Logic as bj
 import Hardcode as hc
 import Text as text
 import matplotlib.pyplot as plt
+import Imitation as imit
+
+# 3 good ways to improve this:
+# 1. Make it dynamcic so I can test it on either hardcode or imit just by passing it an argument. 
+# 2. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
+# 3. Make it so that it can play through decks instead of just through rounds. This will eventually make it so I can factor in card-counting strategies. 
 
 def performance_tracker():
     iterations = 10000
@@ -32,9 +37,9 @@ def performance_tracker():
             deck = deck, 
             sleep = False, 
             get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-            get_split_choice = hc.get_split_choice_hardcode, 
+            get_split_choice = imit.get_split_choice_imit, #hc.get_split_choice_hardcode, 
             display = hc.display_hardcode, 
-            get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, 
+            get_hit_stand_dd = imit.get_hit_stand_dd_imit, #hc.get_hit_stand_dd_hardcode, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
             display_emergency_reshuffle = text.display_hand_print, #Ditto
             display_final_results = hc.display_hardcode

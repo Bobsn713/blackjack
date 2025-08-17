@@ -1,36 +1,27 @@
 # README
 
-## Goal
+## Blackjack Engine Overview
+There are 4 ways to use this Blackjack Engine. 
+1. It can be used to play a text-based blackjack game, with the computer serving as dealer and scorekeeper. 
+2. It can advise you on how to play any given hand. 
+3. It can simulate one of the pre-trained models playing an arbitrary number of rounds, tracking various performance metrics. 
+4. Eventually, it will allow a user to train a new model themselves, which they can then simulate. 
 
-The goal of this project is first of all to "hardcode" a program that can tell me what to do in blackjack, and second of all to train a neural net to learn to play well on its own.
+I developed this engine as an excuse to learn to build neural networks, and built up the other functionality along the way. 
 
-## Structure
+## Instructions for Use and Organization
+The most user friendly way to use this engine is by running the `Welcome.py` file. From here, users can choose which of the 4 functionalities they would like to use. 
 
-**Logic.py** is the brains of the game, where the fundamental gameplay mechanics are defined and stored.
-
-**Text.py** will be where functions for the text based terminal game are stored.
-
-**Hardcode.py** will be where the brains are that can play each hand perfectly.
-
-**Neural Net.py** will be, predictably, where I train the neural net.
-
-**Performance_Tracker.py** Collects and displays game statistics. 
-
-### Temporary Files
-
----
-**Scrapwork.py** is a place to work out an alternative way to store data, which I may use but I am still not sure.
-
-### Notes
-
----
-Eventually there may also be an **Advice.py** file that can be used by a player who inputs gameplay information and gets told how to play.
-
-At this stage I do not integrate card counting strategies, and the rules of the game are not customizable. These will be worth implementing eventually.
+If you want to get further under the hood, here is how the rest of the project is structured: 
+* `Logic.py` is where the primary functions relating to gameplay are defined. It was first designed around the text-based gameplay, and still reflects this organization, though I have attempted to make it more general and the other programs run on it with modfications through dependency injection
+* `Text.py` defines functions related to the text-based gameplay
+* `Hardcode.py` defines functions related to perfect play, related to the advice/cheat functionality
+* `Imitation.py` defines and runs a neural network trained not by reinforcement learning but by "copying" the perfect player defined in `Hardcode.py`. The work to generate and train this family of models is in the `/Build_Imitation` folder
+* `Performance_Tracker.py` defines a function to simulate iterated performance of a model and report performance metrics
+* `Scrapwork.py` is just a place for me to think through and try things out
 
 ## Rules
-
-For now the rules are:
+It is not yet possible to customize the ruleset. The current rules are:
 
 * doubling down is allowed,
 * splitting is allowed,
@@ -40,10 +31,35 @@ For now the rules are:
 * no insurance or surrender,
 * dealer hits on a soft 17 (H17),
 
+## To-Do's
+As of right now there are some more short-term and more long-term to-do's. 
+
+**Short Term**
+1. Improve the `primitive_play_round_cheat()` function in the following, more cosmetic ways:
+    * Celebrate Blackjack?
+    * Handle Input Busts? 
+    * Print Totals? 
+    * Handle conditional doubling (may need to split the `hit_stand_dd_hardcode()` function into two, one that returns conditional doubling information and one that applies the can_double variable to that information to give a decision)
+2. Improve `primitive_play_round_cheat()` to make splits and hits cumulative rather than starting from scratch. 
+    * This may warrant a deeper dive into whether it makes sense to instead modify and use the play_round function in `Logic.py`
+    * NOTE: The trick may be using a customized `emergency_reshuffle_cheat()` function. Because the deck should be empty, instead of dealing we can maybe prompt for the new card drawn at the table? This might be too hacky though. 
+3. Standardize and improve the visuals for both the text-based gameplay and the cheat gameplay
+    * I think the best way to think of this is as individual frames, separated by something like headers or horizontal lines and stalled on with time.sleeps
+4. Add a loading bar to the perfomance tracker
+5. Add p-values/measures of variance to performance tracker
+6. Simplify dependency injection
+    
+**Long Term**
+0. Semi-long term, building out the model training functionality. 
+1. Integrate card counting strategies. This will include alowing for dynamically changing some functions from a play_round model to a play_game model. 
+2. Make rules customizable. 
+3. Refactoring `Logic.py` to make it less _default textbased_
+4. Maybe making a GUI. 
+
 ## Sources
 
-Source for charts
+Source for charts:
 <https://www.blackjackapprenticeship.com/blackjack-strategy-charts/>
 
-Source for blackjack rules
+Source for blackjack rules:
 <https://bicyclecards.com/how-to-play/blackjack>

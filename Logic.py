@@ -57,15 +57,20 @@ def can_split(hand):
     return hand[0][0] == hand[1][0] # True if same rank
 
 def play_individual_hand(
-    hand,
-    deck,
-    bet,
-    cash,
+    # Game State
+    cash, 
+    bet, 
+    deck, 
+    hand, 
     dealer_hand,
-    get_hit_stand_dd,
-    display, 
-    display_emergency_reshuffle, 
-    display_hand
+
+    # Display Functions
+    display,
+    display_hand,
+    display_emergency_reshuffle,
+
+    # Get Functions
+    get_hit_stand_dd
 ):
     """
     Play a single hand and return the result without printing final outcomes.
@@ -127,21 +132,33 @@ def play_individual_hand(
 
 
 def play_round(
+    # Game State
     cash,
     deck,
     sleep,
-    get_bet,
-    get_split_choice,
-    display,
-    get_hit_stand_dd,
-    display_hand,
-    display_emergency_reshuffle, 
-    display_final_results
-):
-    outcomes = [] # is this where I should make this? 
 
-    initial_hand = [deal_card(deck, display_emergency_reshuffle), deal_card(deck, display_emergency_reshuffle)]
-    dealer_hand = [deal_card(deck, display_emergency_reshuffle), deal_card(deck, display_emergency_reshuffle)]
+    # Display Functions
+    display, 
+    display_hand, 
+    display_emergency_reshuffle, 
+    display_final_results,
+
+    # Get Functions
+    get_bet, 
+    get_split_choice, 
+    get_hit_stand_dd, 
+
+    # Optional: Pre-dealt cards for cheat mode
+    initial_hand = None,
+    dealer_hand = None
+    ):
+
+    outcomes = [] # is this where I should make this? 
+    
+    if initial_hand is None:
+        initial_hand = [deal_card(deck, display_emergency_reshuffle), deal_card(deck, display_emergency_reshuffle)]
+    if dealer_hand is None:
+        dealer_hand = [deal_card(deck, display_emergency_reshuffle), deal_card(deck, display_emergency_reshuffle)]
 
     bet = get_bet(cash)
 
@@ -279,15 +296,21 @@ def play_round(
         else:
             #is it getting called?
             hand_result = play_individual_hand(
-                                            hand,
-                                            deck,
-                                            bet,
-                                            cash,
-                                            dealer_hand,
-                                            get_hit_stand_dd,
-                                            display, 
-                                            display_emergency_reshuffle, 
-                                            display_hand)
+                            # Game State
+                            cash, 
+                            bet, 
+                            deck, 
+                            hand, 
+                            dealer_hand,
+
+                            # Display Functions
+                            display,
+                            display_hand,
+                            display_emergency_reshuffle,
+
+                            # Get Functions
+                            get_hit_stand_dd
+)
             
         hand_results.append(hand_result)
 
@@ -369,15 +392,20 @@ def play_round(
 
 
 def play_game(
+    # Game State
+    sleep, 
+
+    # Display Functions
+    display, 
+    display_hand,
+    display_emergency_reshuffle, 
+    display_final_results,
+
+    # Get Functions
     get_another_round,
-    display,
     get_bet,
     get_split_choice,
-    get_hit_stand_dd,
-    display_hand,
-    display_emergency_reshuffle,
-    sleep,
-    display_final_results
+    get_hit_stand_dd
 ):
 
     cash = starting_cash
@@ -403,16 +431,22 @@ def play_game(
 
     while cash > 0:
         result_dict = play_round(
-                    cash,
-                    deck,
-                    sleep,
-                    get_bet,
-                    get_split_choice,
-                    display,
-                    get_hit_stand_dd,
-                    display_hand,
-                    display_emergency_reshuffle, 
-                    display_final_results)
+                        # Game State
+                        cash,
+                        deck,
+                        sleep,
+
+                        # Display Functions
+                        display, 
+                        display_hand, 
+                        display_emergency_reshuffle, 
+                        display_final_results,
+
+                        # Get Functions
+                        get_bet, 
+                        get_split_choice, 
+                        get_hit_stand_dd
+                    )
 
         cash = cash + sum(result_dict['cash_changes'])
 
@@ -435,16 +469,20 @@ def play_game(
 
 def run_text_mode():
     play_game(
-        get_another_round            = text.get_another_round_print,
-        display                      = print,
-        get_bet                      = text.get_bet_print,
-        get_split_choice             = text.get_split_choice_print,
-        get_hit_stand_dd             = text.get_hit_stand_dd_print,
-        display_hand                 = text.display_hand_print,
-        display_emergency_reshuffle  = text.display_emergency_reshuffle_print,
-        sleep                        = True,
-        display_final_results        = text.display_final_results_print
+        # Game State
+        sleep                       = True,
 
+        # Display Functions
+        display                     = print, 
+        display_hand                = text.display_hand_print,
+        display_emergency_reshuffle = text.display_emergency_reshuffle_print,
+        display_final_results       = text.display_final_results_print,
+
+        # Get Functions
+        get_another_round           = text.get_another_round_print,
+        get_bet                     = text.get_bet_print,
+        get_split_choice            = text.get_split_choice_print,
+        get_hit_stand_dd            = text.get_hit_stand_dd_print
     )
 
 def run_hardcode_mode(game_or_round):
@@ -453,47 +491,63 @@ def run_hardcode_mode(game_or_round):
 
     #I think the strategy would be to pull all these arguments out and make them variable definitions, 
     # and then have a play game and play round function
-    get_another_round              = hc.get_another_round_hardcode
-    display                        = print
-    get_bet                        = hc.get_bet_hardcode
-    get_split_choice               = hc.get_split_choice_hardcode
-    get_hit_stand_dd               = hc.get_hit_stand_dd_hardcode
-    display_hand                   = text.display_hand_print           # or hc.display_hand_hardcode
-    display_emergency_reshuffle    = text.display_emergency_reshuffle_print    # or hc.emergency_reshuffle_hardcode
-    sleep                          = False
-    display_final_results          = text.display_final_results_print
+
+    # Game State
+    sleep                       = False
+
+    # Display Functions
+    display                     = print
+    display_hand                = text.display_hand_print # or hc.display_hand_hardcode
+    display_emergency_reshuffle = text.display_emergency_reshuffle_print # or hc.emergency_reshuffle_hardcode
+    display_final_results       = text.display_final_results_print
+
+    # Get Functions
+    get_another_round           = hc.get_another_round_hardcode
+    get_bet                     = hc.get_bet_hardcode
+    get_split_choice            = hc.get_split_choice_hardcode
+    get_hit_stand_dd            = hc.get_hit_stand_dd_hardcode
 
     if game_or_round == 'game':
         play_game(
-            get_another_round,              
-            display,                        
-            get_bet,                        
-            get_split_choice,               
-            get_hit_stand_dd,               
-            display_hand,                   
-            display_emergency_reshuffle,    
+            # Game State
             sleep, 
-            display_final_results                          
+
+            # Display Functions
+            display, 
+            display_hand,
+            display_emergency_reshuffle, 
+            display_final_results,
+
+            # Get Functions
+            get_another_round,
+            get_bet,
+            get_split_choice,
+            get_hit_stand_dd                      
         )
     elif game_or_round == 'round':
         deck = create_deck()
         shuffle_deck(deck)
 
         play_round(
+            # Game State
             1000, #infinite cash relative to bet size
-            deck, 
-            sleep, 
-            lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-            get_split_choice, 
+            deck,
+            sleep,
+
+            # Display Functions
             display, 
-            get_hit_stand_dd, 
             display_hand, 
             display_emergency_reshuffle, 
-            display_final_results
+            display_final_results,
+
+            # Get Functions
+            lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
+            get_split_choice, 
+            get_hit_stand_dd
         )
     else: 
         raise ValueError("Pass either 'game' or 'round as arguments to 'run_hardcode_mode()'")
 
 
 if __name__ == "__main__":
-    run_hardcode_mode('game')
+    run_text_mode()

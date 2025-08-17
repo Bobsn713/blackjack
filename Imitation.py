@@ -3,6 +3,9 @@ import torch
 from torch import nn
 from Build_Imitation import Build_Imitation_Util as biu #we have to copy the csv formatting to load into the nn
 
+
+# HELPER FUNCTIONS/DEFINITIONS
+
 # Model Definitions copied from Build_Imitation/sn_ntbk and Build_Imitation/hs_ntbk
 # I feel like technically I should make this dynamic but I don't really want to figure that out right now. 
 # I should also potentially do this whole thing as model weights
@@ -41,8 +44,6 @@ class hsd_NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
     
-
-
 ##### COPIED FROM Jupyter Notebooks
 #(So these should probably get defined somewhere else to get rid of the redundancy)
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -61,7 +62,8 @@ def hand_to_list(hand):
     hand_list_1 = hand.split("-")
     hand_list_2 = [card_to_vec(card) for card in hand_list_1]
     return hand_list_2
-###########################
+
+# GET FUNCTIONS
 
 def get_split_choice_imit(player_hand, dealer_hand):
     model_path = "Build_Imitation/sn_imit_weights.pt"
@@ -129,4 +131,3 @@ def get_hit_stand_dd_imit(player_hand, dealer_hand, can_double):
         return "double down"
     else:
         return "Something went wrong"
-

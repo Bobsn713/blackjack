@@ -1,7 +1,6 @@
 import Logic as bj
 
-#I think it's fine but it may be more like technically fair if these functions only get
-# passed the dealer's upcard and not his whole hand (maybe more relevant for NN?)
+### STRATEGY FUNCTIONS
 
 def hard_decision(player_hand, dealer_hand, can_double):
     player_total = bj.hand_value(player_hand)
@@ -45,8 +44,37 @@ def soft_decision(player_hand, dealer_hand, can_double, soft_total):
         return "double down" if can_double else "hit"
     else:
         return "hit"
+    
+def is_soft_total(hand): #it's possible this makes more sense to put in the Logic file
+    #Also, this is so similar to hand_value it's probably redundant somehow but this is the easiest fix
+    """Returns a tuple (is_soft, total) where total is either soft or hard depending on is_soft"""
+    hand_ranks = []
+    for card in hand:
+        hand_ranks.append(bj.card_value(card))
 
-#Defining input functions
+    for i, card in enumerate(hand_ranks): 
+        if sum(hand_ranks) > 21 and card == 11:
+            hand_ranks[i] = 1
+
+    if 11 in hand_ranks:
+        is_soft = True
+        total = sum(hand_ranks) - 11
+    else: 
+        is_soft = False
+        total = sum(hand_ranks) #this is just the hard total
+    
+    return is_soft, total
+
+
+# DISPLAY FUNCTIONS
+def display_hardcode(msg): #Maybe worth renaming for generality, but it fits my current sytem
+    pass #just doesn't print anything! That's it!
+
+
+# GET FUNCTIONS
+
+def get_another_round_hardcode():
+    return input("\nPlay another round? (y/n): ").lower() #Keeping this for now, could make it like a for loop or something
 
 def get_bet_hardcode(cash):
     return 100 #Automatically set the bet amount to 100
@@ -69,27 +97,6 @@ def get_split_choice_hardcode(player_hand, dealer_hand):
     else: 
         return "n"
     
-def is_soft_total(hand): #it's possible this makes more sense to put in the Logic file
-    #Also, this is so similar to hand_value it's probably redundant somehow but this is the easiest fix
-    """Returns a tuple (is_soft, total) where total is either soft or hard depending on is_soft"""
-    hand_ranks = []
-    for card in hand:
-        hand_ranks.append(bj.card_value(card))
-
-    for i, card in enumerate(hand_ranks): 
-        if sum(hand_ranks) > 21 and card == 11:
-            hand_ranks[i] = 1
-
-    if 11 in hand_ranks:
-        is_soft = True
-        total = sum(hand_ranks) - 11
-    else: 
-        is_soft = False
-        total = sum(hand_ranks) #this is just the hard total
-    
-    return is_soft, total
-
-    
 def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double):
     is_soft, soft_total = is_soft_total(player_hand)
 
@@ -97,10 +104,4 @@ def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double):
         return soft_decision(player_hand, dealer_hand, can_double, soft_total)
     else:
         return hard_decision(player_hand, dealer_hand, can_double)
-    
-def get_another_round_hardcode():
-    return input("\nPlay another round? (y/n): ").lower() #Keeping this for now, could make it like a for loop or something
-
-def display_hardcode(msg): #Maybe worth renaming for generality, but it fits my current sytem
-    return #just doesn't print anything! That's it!
 

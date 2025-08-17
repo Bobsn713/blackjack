@@ -33,16 +33,21 @@ def performance_tracker():
         bj.shuffle_deck(deck)
 
         return_dict = bj.play_round(
-            cash = cash, #infinite cash relative to bet size
-            deck = deck, 
-            sleep = False, 
-            get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-            get_split_choice = imit.get_split_choice_imit, #hc.get_split_choice_hardcode, 
+            # Game State
+            cash,
+            deck,
+            sleep = False,
+
+            # Display Functions (I no longer understand why this works)
             display = hc.display_hardcode, 
-            get_hit_stand_dd = imit.get_hit_stand_dd_imit, #hc.get_hit_stand_dd_hardcode, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
             display_emergency_reshuffle = text.display_hand_print, #Ditto
-            display_final_results = hc.display_hardcode
+            display_final_results = hc.display_hardcode,
+
+            # Get Functions
+            get_bet = lambda cash: 1, 
+            get_split_choice = imit.get_split_choice_imit, #hc.get_split_choice_hardcode 
+            get_hit_stand_dd = imit.get_hit_stand_dd_imit #hc.get_hit_stand_dd_imit
         )
 
         #Making Cash Lists

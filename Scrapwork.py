@@ -199,3 +199,104 @@ bj.shuffle_deck(deck)
 'outcomes': ['Dealer Bust', 'Dealer Bust', 'Dealer Bust', 'Player Bust']}
 
 #Possible Outcomes 'Blackjack Push', 'Dealer Blackjack', 'Player Blackjack', 'Player Bust', 'Dealer Bust', 'Player Higher', 'Dealer Higher', 'Push'
+
+
+
+
+# This is the "play_normal_round" function that claude made me to keep current settings: 
+def play_normal_round(cash, deck, sleep, display, display_hand, 
+                     display_emergency_reshuffle, display_final_results):
+    return play_round(
+        cash=cash,
+        deck=deck,
+        sleep=sleep,
+        display=display,
+        display_hand=display_hand,
+        display_emergency_reshuffle=display_emergency_reshuffle,
+        display_final_results=display_final_results,
+        get_bet=txt.get_bet_print,  # Your existing functions
+        get_split_choice=txt.get_split_choice_print,
+        get_hit_stand_dd=txt.get_hit_stand_dd_print
+    )
+
+
+# Here's what it says to do for play_round_cheat()
+def play_cheat_round():
+    # Get the cards from user input
+    hand = get_hand_cheat()
+    d_upcard = get_dealer_upcard_cheat()
+    
+    # Create a dummy second dealer card (required for the function)
+    dealer_hand = [d_upcard[0], ('2', 'H')]  # Second card doesn't matter for strategy
+    
+    # Mock functions for cheat mode
+    def mock_get_bet(cash):
+        return 10  # Dummy bet
+    
+    def mock_display(text):
+        pass  # Silent
+    
+    def mock_display_hand(hand, hidden=False):
+        return str(hand)  # Simple display
+    
+    def mock_display_emergency_reshuffle():
+        pass
+    
+    def mock_display_final_results(results):
+        # Extract and display the recommendations
+        for i, outcome in enumerate(results['outcomes']):
+            if len(results['player_hands']) > 1:
+                print(f"Hand {i+1}: {outcome}")
+            else:
+                print(f"Recommendation: {outcome}")
+    
+    # Create a dummy deck (won't be used since we're providing cards)
+    dummy_deck = []
+    
+    return play_round(
+        cash=1000,  # Dummy cash
+        deck=dummy_deck,
+        sleep=False,
+        display=mock_display,
+        display_hand=mock_display_hand,
+        display_emergency_reshuffle=mock_display_emergency_reshuffle,
+        display_final_results=mock_display_final_results,
+        get_bet=mock_get_bet,
+        get_split_choice=hc.get_split_choice_hardcode,  # Your cheat functions
+        get_hit_stand_dd=hc.get_hit_stand_dd_hardcode,
+        initial_hand=hand,  # Pre-provide the cards
+        dealer_hand=dealer_hand
+    )
+
+# And I don't really understand this but this is a way it shows to simplify things
+# Alternative: Even cleaner approach with strategy classes
+class PlayStrategy:
+    def get_bet(self, cash): raise NotImplementedError
+    def get_split_choice(self, hand, dealer_hand): raise NotImplementedError  
+    def get_hit_stand_dd(self, hand, dealer_hand, can_double): raise NotImplementedError
+
+class HumanStrategy(PlayStrategy):
+    def get_bet(self, cash): return txt.get_bet_print(cash)
+    def get_split_choice(self, hand, dealer_hand): return txt.get_split_choice_print(hand, dealer_hand)
+    def get_hit_stand_dd(self, hand, dealer_hand, can_double): return txt.get_hit_stand_dd_print(hand, dealer_hand, can_double)
+
+class CheatStrategy(PlayStrategy):
+    def get_bet(self, cash): return 10  # Dummy
+    def get_split_choice(self, hand, dealer_hand): return hc.get_split_choice_hardcode(hand, dealer_hand)
+    def get_hit_stand_dd(self, hand, dealer_hand, can_double): return hc.get_hit_stand_dd_hardcode(hand, dealer_hand, can_double)
+
+# Usage would be:
+# play_round_with_strategy(cash, deck, sleep, display_funcs, HumanStrategy())
+# play_round_with_strategy(cash, deck, sleep, display_funcs, CheatStrategy(), 
+#                         initial_hand=hand, dealer_hand=dealer_hand)
+
+
+
+So right now I have the following ways to play: 
+ - Text Mode (Full game)
+ - Hardcode Mode (Full Game)
+ - Hardcode Mode (Rounds) 
+
+ - Performance Tracker (imit or hardcode)
+
+ - Cheat Mode (Rounds only for now)

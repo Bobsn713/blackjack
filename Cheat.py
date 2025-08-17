@@ -51,21 +51,31 @@ def get_dealer_upcard_cheat():
 # # THIS CODE RUNS, BUT I'M TRYING TO USE THE play_round() FUNCTION FROM LOGIC
 # ###################
 
-# def play_round_cheat(): # Should I just be calling the play_round function from logic here ?
-#     hand = get_hand_cheat()
-#     d_upcard = get_dealer_upcard_cheat()
-#     print()
+def play_round_cheat(): # Should I just be calling the play_round function from logic here ?
+    hand = get_hand_cheat()
+    d_upcard = get_dealer_upcard_cheat()
+    print()
 
-#     if hand[0][0] == hand[1][0]: # This is nowhere near as robust as what I really want
-#         s_or_n = hc.get_split_choice_hardcode(hand, d_upcard) # Dealer's second card is ignored within the function
-#         if s_or_n == 'y':
-#             print('Split')
-#             # I need to add functionality for new hands
-#         else:
-#             print('Don\'t Split')
+    if hand[0][0] == hand[1][0]: # This is nowhere near as robust as what I really want
+        s_or_n = hc.get_split_choice_hardcode(hand, d_upcard) # Dealer's second card is ignored within the function
+        if s_or_n == 'y':
+            print('Split')
+            # I need to add functionality for new hands
+        else:
+            print('Don\'t Split')
 
-#     print(hc.get_hit_stand_dd_hardcode(hand, d_upcard, True).capitalize()) 
-#     # figure out what to do with can_double
-#     # print prettier
+    print(hc.get_hit_stand_dd_hardcode(hand, d_upcard, True).capitalize()) 
+    # figure out what to do with can_double
+    # print prettier
         
 # #play_round_cheat()
+
+def play_round_cheat(): 
+    hand = get_hand_cheat()
+    d_upcard = get_dealer_upcard_cheat()
+    print()
+
+    dealer_hand = [d_upcard[0], ('2', 'H')] #Second card is fake, just so things don't break
+    
+
+    bj.play_round(1000, )

@@ -60,8 +60,7 @@ def primitive_play_round_cheat(): # Should I just be calling the play_round func
         s_or_n = hc.get_split_choice_hardcode(hand, d_upcard) # Dealer's second card is ignored within the function
         if s_or_n == 'y':
             print('Split')
-            print('\n(treat each new hand independently)')
-            pass
+            return
         
 
     hsd = hc.get_hit_stand_dd_hardcode(hand, d_upcard, True)

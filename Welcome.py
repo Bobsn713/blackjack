@@ -67,20 +67,26 @@ while keep_playing:
         # Print totals?
         # Make splits and hits cumulative instead of starting from scratch
     elif mode_choice in ['simulate', 's']:
-        # Placeholders...
-        print("Model: ")
-        print("# of Iterations: ")
-        # Look into tqdm progress bar
-        #pt.performance_tracker()
+        model = input("Model: ") # Make input handling robust
+        iterations = int(input("# of Iterations: ")) # Make input handling robust
+        pt.performance_tracker(model,iterations)
     elif mode_choice in ['train', 't']:
-        print("I'll come back to this shortly")
+        message = "Sorry, this functionality isn't quite ready yet."
+        len_mes = len(message)
+        buffer = int((80 - len(message))/2)
+        print("#"*80)
+        print(" " * buffer, message, " " * buffer)
+        print("#"*80)
     elif mode_choice in ['quit', 'q']:
         keep_playing = False
     else: 
         print("Please enter a valid choice. Type 'help' for more information.")
 
-clear()
+print('\n'*6)
 print("Thanks for playing!")
+print('\n'*6)
 time.sleep(2)
-print()
         
+### Should I turn this into a function and add something like this? 
+# if __name__ == "__main__":
+#     run_text_mode()

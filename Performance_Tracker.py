@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import Imitation as imit
 
 # 3 good ways to improve this:
-# 1. Make it dynamcic so I can test it on either hardcode or imit just by passing it an argument. 
+# 1. Look into tqdm progress bar
 # 2. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
 # 3. Make it so that it can play through decks instead of just through rounds. This will eventually make it so I can factor in card-counting strategies. 
 
-def performance_tracker():
-    iterations = 10000
-    cash = 1000
+def performance_tracker(model, iterations = 10000):
+    model = model.lower()
+    cash = 1000 # big enough that bets sized 1 will never bring it to 0
 
     #Cash Tracking Lists
     round_cash_changes = []
@@ -27,6 +27,15 @@ def performance_tracker():
 
     #Running Total
     running_cash_total = []
+
+    if model in ['imit', 'imitation']:
+        get_split_choice = imit.get_split_choice_imit
+        get_hit_stand_dd = imit.get_hit_stand_dd_imit
+    elif model in ['hc', 'hardcode']:
+        get_split_choice = hc.get_split_choice_hardcode
+        get_hit_stand_dd = hc.get_hit_stand_dd_hardcode
+    else: 
+        raise ValueError("Pass either 'imitation' or 'hardcode' to 'run_hardcode_mode()'")
 
     for i in range(iterations):     
         deck = bj.create_deck()
@@ -46,8 +55,8 @@ def performance_tracker():
 
             # Get Functions
             get_bet = lambda cash: 1, 
-            get_split_choice = imit.get_split_choice_imit, #hc.get_split_choice_hardcode 
-            get_hit_stand_dd = imit.get_hit_stand_dd_imit #hc.get_hit_stand_dd_imit
+            get_split_choice = get_split_choice,
+            get_hit_stand_dd = get_hit_stand_dd
         )
 
         #Making Cash Lists
@@ -124,6 +133,7 @@ def performance_tracker():
     print(f"Cumulative Outcome: {cumulative_cash_change} units")
     print(f"Expected Return (per hand): {expected_return_per_hand}")
     print()
+    print("Totals:")
     print(f"Won: {won}   Push: {push_incl}   Lost: {lost}")
     print(f"Player BJ: {p_bj}   BJ Push: {push_bj}   Dealer BJ: {d_bj}")
     print(f"Player Bust: {p_bust}   Dealer Bust: {d_bust}")
@@ -141,4 +151,4 @@ def performance_tracker():
     plt.show()
 
 if __name__ == "__main__":
-    performance_tracker()
+    performance_tracker('hc')

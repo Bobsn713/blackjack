@@ -2,7 +2,7 @@ import Logic as bj
 import Hardcode as hc
 import Text as text
 import matplotlib.pyplot as plt
-from Imitation import Imitation_Util as imit
+import Imitation as imit
 
 # 3 good ways to improve this:
 # 1. Make it dynamcic so I can test it on either hardcode or imit just by passing it an argument. 
@@ -134,43 +134,5 @@ def performance_tracker():
 
     plt.plot(running_cash_total)
     plt.show()
-
-#### Temp Fix ####
-# I need access to the model definitions so I'm just copying them in here. 
-from torch import nn
-class sn_NeuralNetwork(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(26, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1),
-        )
-
-    def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
-    
-class hsd_NeuralNetwork(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(105, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 3),
-        )
-
-    def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
-#####################
 
 performance_tracker()

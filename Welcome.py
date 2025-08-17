@@ -1,9 +1,10 @@
 # This is supposed to help a user unfamiliar with the code to run it. 
 import pyfiglet
 import time
-import Logic as l
+import Logic as bj
 import Text as txt
 import Performance_Tracker as pt
+import Cheat as ch
 
 def clear():
     print("\n" * 30)
@@ -36,7 +37,7 @@ while keep_playing:
         print("New Game")
         print("="*80)
         print()
-        l.play_game(
+        bj.play_game(
             get_another_round            = txt.get_another_round_print,
             display                      = print,
             get_bet                      = txt.get_bet_print,
@@ -48,7 +49,22 @@ while keep_playing:
             display_final_results        = txt.display_final_results_print
         )
     elif mode_choice in ['cheat', 'c']:
-        print("I'll come back to this shortly")
+        run_again = True
+        while run_again:
+            ch.play_round_cheat()
+            another_round = txt.get_another_round_print()
+            print()
+            if another_round != 'y':
+                print("Thanks for playing!")
+                run_again = False
+
+            
+
+        # INCOMPLETE
+        # Should the player be able to pick between hand by hand or whole game cheat cycles? 
+        # Handle split logic
+        # Print Prettier
+        # Celebrate Blackjack?
     elif mode_choice in ['simulate', 's']:
         # Placeholders...
         print("Model: ")
@@ -62,6 +78,8 @@ while keep_playing:
     else: 
         print("Please enter a valid choice. Type 'help' for more information.")
 
-print("Thanks for playing!")
 clear()
+print("Thanks for playing!")
+time.sleep(2)
+print()
         

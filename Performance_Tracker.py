@@ -135,4 +135,4 @@ def performance_tracker():
     plt.plot(running_cash_total)
     plt.show()
 
-performance_tracker()
+#performance_tracker()

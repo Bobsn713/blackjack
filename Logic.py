@@ -399,7 +399,7 @@ def play_game(
     # ###SPECIAL TESTING CODE ^^^^^^^
 
     #Just for formatting
-    display("\n") #Do I need this?
+    #display("\n") #Do I need this?
 
     while cash > 0:
         result_dict = play_round(

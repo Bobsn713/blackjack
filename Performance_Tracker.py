@@ -38,11 +38,11 @@ def performance_tracker():
             deck,
             sleep = False,
 
-            # Display Functions (I no longer understand why this works)
-            display = hc.display_hardcode, 
-            display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
-            display_emergency_reshuffle = text.display_hand_print, #Ditto
-            display_final_results = hc.display_hardcode,
+            # Display Functions
+            display = hc.display_nothing_hardcode, 
+            display_hand = hc.display_nothing_hardcode, # I think as long as the display function is empty this shouldn't print
+            display_emergency_reshuffle = hc.display_nothing_hardcode, #Ditto
+            display_final_results = hc.display_nothing_hardcode,
 
             # Get Functions
             get_bet = lambda cash: 1, 
@@ -140,4 +140,5 @@ def performance_tracker():
     plt.plot(running_cash_total)
     plt.show()
 
-#performance_tracker()
+if __name__ == "__main__":
+    performance_tracker()

@@ -44,7 +44,7 @@ class hsd_NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
     
-##### COPIED FROM Jupyter Notebooks
+#COPIED FROM Jupyter Notebooks
 #(So these should probably get defined somewhere else to get rid of the redundancy)
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 rank_to_index = {rank: i for i, rank in enumerate(ranks)}
@@ -62,6 +62,7 @@ def hand_to_list(hand):
     hand_list_1 = hand.split("-")
     hand_list_2 = [card_to_vec(card) for card in hand_list_1]
     return hand_list_2
+
 
 # GET FUNCTIONS
 

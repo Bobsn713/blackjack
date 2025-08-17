@@ -51,20 +51,21 @@ while keep_playing:
     elif mode_choice in ['cheat', 'c']:
         run_again = True
         while run_again:
-            ch.play_round_cheat()
+            ch.primitive_play_round_cheat()
+            time.sleep(1)
             another_round = txt.get_another_round_print()
             print()
             if another_round != 'y':
                 print("Thanks for playing!")
                 run_again = False
 
-            
-
         # INCOMPLETE
         # Should the player be able to pick between hand by hand or whole game cheat cycles? 
-        # Handle split logic
         # Print Prettier
         # Celebrate Blackjack?
+        # Handle input busts?
+        # Print totals?
+        # Make splits and hits cumulative instead of starting from scratch
     elif mode_choice in ['simulate', 's']:
         # Placeholders...
         print("Model: ")

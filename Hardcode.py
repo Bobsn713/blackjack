@@ -67,9 +67,8 @@ def is_soft_total(hand): #it's possible this makes more sense to put in the Logi
 
 
 # DISPLAY FUNCTIONS
-def display_hardcode(msg): #Maybe worth renaming for generality, but it fits my current sytem
+def display_nothing_hardcode(*args, **kwargs): #Maybe worth renaming for generality, but it fits my current sytem
     pass #just doesn't print anything! That's it!
-
 
 # GET FUNCTIONS
 

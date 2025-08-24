@@ -67,7 +67,7 @@ def hand_to_list(hand):
 # GET FUNCTIONS
 
 def get_split_choice_imit(player_hand, dealer_hand):
-    model_path = "Build_Imitation/sn_imit_weights.pt"
+    model_path = "/Users/brantwilson/Ideas and Projects/Blackjack/Build_Imitation/sn_imit_weights.pt"
     split_model = sn_NeuralNetwork()
     split_model.load_state_dict(torch.load(model_path))
     split_model.eval()
@@ -92,7 +92,7 @@ def get_split_choice_imit(player_hand, dealer_hand):
     return "y" if result else "n"
 
 def get_hit_stand_dd_imit(player_hand, dealer_hand, can_double):
-    model_path = "Build_Imitation/hsd_imit_weights.pt"
+    model_path = "/Users/brantwilson/Ideas and Projects/Blackjack/Build_Imitation/hsd_imit_weights.pt"
     hsd_model = hsd_NeuralNetwork()
     hsd_model.load_state_dict(torch.load(model_path))
     hsd_model.eval()

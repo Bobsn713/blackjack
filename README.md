@@ -46,8 +46,9 @@ As of right now there are some more short-term and more long-term to-do's.
 3. Standardize and improve the visuals for both the text-based gameplay and the cheat gameplay
     * I think the best way to think of this is as individual frames, separated by something like headers or horizontal lines and stalled on with time.sleeps
 4. Add a loading bar to the perfomance tracker
-5. Add p-values/measures of variance to performance tracker
-6. Simplify dependency injection
+5. Improve error handling for model entry in 'simulate' functionality. 
+6. Add p-values/measures of variance to performance tracker
+7. Simplify dependency injection
     
 **Long Term**
 0. Semi-long term, building out the model training functionality. 

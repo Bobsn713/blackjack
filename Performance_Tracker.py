@@ -151,4 +151,4 @@ def performance_tracker(model, iterations = 10000):
     plt.show()
 
 if __name__ == "__main__":
-    performance_tracker('hc')
+    performance_tracker('imit')

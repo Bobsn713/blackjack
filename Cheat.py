@@ -91,7 +91,11 @@ def get_hit_stand_dd_cheat(player_hand, dealer_hand, can_double):
     print()
     return result
 
-
+def get_card_cheat(deck, display_emergency_reshuffle):
+    raw_card = input("Input your card: ").upper()
+    card = regex_parse_input(raw_card)
+    #deck.pop(card)
+    return card
 
 
 

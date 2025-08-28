@@ -56,7 +56,8 @@ def performance_tracker(model, iterations = 10000):
             # Get Functions
             get_bet = lambda cash: 1, 
             get_split_choice = get_split_choice,
-            get_hit_stand_dd = get_hit_stand_dd
+            get_hit_stand_dd = get_hit_stand_dd, 
+            get_card         = bj.deal_card
         )
 
         #Making Cash Lists
@@ -151,4 +152,4 @@ def performance_tracker(model, iterations = 10000):
     plt.show()
 
 if __name__ == "__main__":
-    performance_tracker('imit')
+    performance_tracker('hardcode')

@@ -43,6 +43,7 @@ while keep_playing:
             get_bet                      = txt.get_bet_print,
             get_split_choice             = txt.get_split_choice_print,
             get_hit_stand_dd             = txt.get_hit_stand_dd_print,
+            get_card                     = bj.deal_card,
             display_hand                 = txt.display_hand_print,
             display_emergency_reshuffle  = txt.display_emergency_reshuffle_print,
             sleep                        = True,

@@ -49,6 +49,7 @@ As of right now there are some more short-term and more long-term to-do's.
 5. Improve error handling for model entry in 'simulate' functionality. 
 6. Add p-values/measures of variance to performance tracker
 7. Simplify dependency injection
+8. Add betting strategies to the simulation
     
 **Long Term**
 0. Semi-long term, building out the model training functionality. 

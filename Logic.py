@@ -70,7 +70,8 @@ def play_individual_hand(
     display_emergency_reshuffle,
 
     # Get Functions
-    get_hit_stand_dd
+    get_hit_stand_dd, 
+    get_card
 ):
     """
     Play a single hand and return the result without printing final outcomes.
@@ -84,7 +85,7 @@ def play_individual_hand(
         h_or_s = get_hit_stand_dd(hand, dealer_hand, can_double)
 
         if h_or_s == "hit":
-            hand.append(deal_card(deck, display_emergency_reshuffle))
+            hand.append(get_card(deck, display_emergency_reshuffle))
             display(f"\nYou drew: {display_hand([hand[-1]])}")
             display(f"Player Hand: {display_hand(hand)}")
             display(f"Dealer Hand: {display_hand(dealer_hand, True)}")
@@ -107,7 +108,7 @@ def play_individual_hand(
             }
 
         elif h_or_s == "double down" and can_double:
-            hand.append(deal_card(deck, display_emergency_reshuffle))
+            hand.append(get_card(deck, display_emergency_reshuffle))
             display(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
             display(f"Player Hand: {display_hand(hand)}")
 
@@ -147,6 +148,7 @@ def play_round(
     get_bet, 
     get_split_choice, 
     get_hit_stand_dd, 
+    get_card,
 
     # Optional: Pre-dealt cards for cheat mode
     initial_hand = None,
@@ -156,9 +158,9 @@ def play_round(
     outcomes = [] # is this where I should make this? 
     
     if initial_hand is None:
-        initial_hand = [deal_card(deck, display_emergency_reshuffle), deal_card(deck, display_emergency_reshuffle)]
+        initial_hand = [get_card(deck, display_emergency_reshuffle), get_card(deck, display_emergency_reshuffle)]
     if dealer_hand is None:
-        dealer_hand = [deal_card(deck, display_emergency_reshuffle), deal_card(deck, display_emergency_reshuffle)]
+        dealer_hand = [get_card(deck, display_emergency_reshuffle), get_card(deck, display_emergency_reshuffle)]
 
     bet = get_bet(cash)
 
@@ -246,8 +248,8 @@ def play_round(
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]
             
-            new_hand1 = [card1, deal_card(deck, display_emergency_reshuffle)]
-            new_hand2 = [card2, deal_card(deck, display_emergency_reshuffle)]
+            new_hand1 = [card1, get_card(deck, display_emergency_reshuffle)]
+            new_hand2 = [card2, get_card(deck, display_emergency_reshuffle)]
             
             # Special handling for split aces (rule: only one card after split)
             if card1[0] == 'A':
@@ -309,7 +311,8 @@ def play_round(
                             display_emergency_reshuffle,
 
                             # Get Functions
-                            get_hit_stand_dd
+                            get_hit_stand_dd, 
+                            get_card
 )
             
         hand_results.append(hand_result)
@@ -330,7 +333,7 @@ def play_round(
         display("")
         
         while hand_value(dealer_hand) < 17:
-            dealer_hand.append(deal_card(deck, display_emergency_reshuffle))
+            dealer_hand.append(get_card(deck, display_emergency_reshuffle))
             display(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
 
          
@@ -405,7 +408,8 @@ def play_game(
     get_another_round,
     get_bet,
     get_split_choice,
-    get_hit_stand_dd
+    get_hit_stand_dd, 
+    get_card
 ):
 
     cash = starting_cash
@@ -445,7 +449,8 @@ def play_game(
                         # Get Functions
                         get_bet, 
                         get_split_choice, 
-                        get_hit_stand_dd
+                        get_hit_stand_dd, 
+                        get_card
                     )
 
         cash = cash + sum(result_dict['cash_changes'])
@@ -482,7 +487,8 @@ def run_text_mode():
         get_another_round           = text.get_another_round_print,
         get_bet                     = text.get_bet_print,
         get_split_choice            = text.get_split_choice_print,
-        get_hit_stand_dd            = text.get_hit_stand_dd_print
+        get_hit_stand_dd            = text.get_hit_stand_dd_print, 
+        get_card                    = deal_card
     )
 
 def run_hardcode_mode(game_or_round):
@@ -506,6 +512,7 @@ def run_hardcode_mode(game_or_round):
     get_bet                     = hc.get_bet_hardcode
     get_split_choice            = hc.get_split_choice_hardcode
     get_hit_stand_dd            = hc.get_hit_stand_dd_hardcode
+    get_card                    = deal_card
 
     if game_or_round == 'game':
         play_game(
@@ -522,7 +529,8 @@ def run_hardcode_mode(game_or_round):
             get_another_round,
             get_bet,
             get_split_choice,
-            get_hit_stand_dd                      
+            get_hit_stand_dd,
+            get_card                      
         )
     elif game_or_round == 'round':
         deck = create_deck()
@@ -543,7 +551,8 @@ def run_hardcode_mode(game_or_round):
             # Get Functions
             lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
             get_split_choice, 
-            get_hit_stand_dd
+            get_hit_stand_dd, 
+            get_card
         )
     else: 
         raise ValueError("Pass either 'game' or 'round as arguments to 'run_hardcode_mode()'")

@@ -83,13 +83,13 @@ def get_bet_print(cash, input = input, print = print):
             print(f"Cash: {cash}")
             bet = int(input("Bet: "))
             if bet <= 0:
-                print("Bet must be positive.")
+                print("\nBet must be positive.\n")
             elif bet > cash:
-                print("You don't have enough money for that bet.")
+                print("\nYou don't have enough money for that bet.\n")
             else:
                 return bet
         except ValueError:
-            print("Please enter a valid number.")
+            print("\nPlease enter a valid (whole) number.\n")
 
 def get_split_choice_print(hand, dealer_hand): #dealer hand is just in there because the hardcode version of the file needs it
     print(f"\nCurrently considering: {display_hand_print(hand)}")

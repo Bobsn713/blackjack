@@ -57,7 +57,7 @@ def performance_tracker(model, iterations = 10000):
             get_bet = lambda cash: 1, 
             get_split_choice = get_split_choice,
             get_hit_stand_dd = get_hit_stand_dd, 
-            get_card         = bj.deal_card
+            get_card         = bj.get_card_deal
         )
 
         #Making Cash Lists

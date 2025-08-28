@@ -16,7 +16,13 @@ def create_deck(num_decks = 1):
 def shuffle_deck(deck):
     return random.shuffle(deck)
 
-def deal_card(deck, display_emergency_reshuffle):
+def get_card_deal(deck, display_emergency_reshuffle, msg = None):
+
+    if msg == 'phand': 
+        card1 = get_card_deal(deck, display_emergency_reshuffle)
+        card2 = get_card_deal(deck, display_emergency_reshuffle)
+        return [card1, card2]
+    
     if len(deck) == 0:
         # Emergency reshuffle
         deck.extend(create_deck())
@@ -85,7 +91,7 @@ def play_individual_hand(
         h_or_s = get_hit_stand_dd(hand, dealer_hand, can_double)
 
         if h_or_s == "hit":
-            hand.append(get_card(deck, display_emergency_reshuffle))
+            hand.append(get_card(deck, display_emergency_reshuffle, msg = 'hit'))
             display(f"\nYou drew: {display_hand([hand[-1]])}")
             display(f"Player Hand: {display_hand(hand)}")
             display(f"Dealer Hand: {display_hand(dealer_hand, True)}")
@@ -108,7 +114,7 @@ def play_individual_hand(
             }
 
         elif h_or_s == "double down" and can_double:
-            hand.append(get_card(deck, display_emergency_reshuffle))
+            hand.append(get_card(deck, display_emergency_reshuffle, msg = 'dd'))
             display(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
             display(f"Player Hand: {display_hand(hand)}")
 
@@ -149,20 +155,17 @@ def play_round(
     get_split_choice, 
     get_hit_stand_dd, 
     get_card,
-
-    # Optional: Pre-dealt cards for cheat mode
-    initial_hand = None,
-    dealer_hand = None
     ):
 
-    outcomes = [] # is this where I should make this? 
-    
-    if initial_hand is None:
-        initial_hand = [get_card(deck, display_emergency_reshuffle), get_card(deck, display_emergency_reshuffle)]
-    if dealer_hand is None:
-        dealer_hand = [get_card(deck, display_emergency_reshuffle), get_card(deck, display_emergency_reshuffle)]
+    print('='*40)
+    print("NEW ROUND")
+    print('='*40)
 
     bet = get_bet(cash)
+
+    outcomes = [] # is this where I should make this? 
+    initial_hand = get_card(deck, display_emergency_reshuffle, msg = 'phand')
+    dealer_hand = [get_card(deck, display_emergency_reshuffle, msg = 'dhand1'), get_card(deck, display_emergency_reshuffle, msg = 'dhand?')]
 
     display(f"\nPlayer hand: {display_hand(initial_hand)}")
     display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
@@ -172,8 +175,13 @@ def play_round(
     # it might be as easy as making a results dictionary and not returning anything 
     # but I need to check the logic in the function. 
 
+    # Dealer Blackjack Check: Handle the "peek" for cheat mode
+    if dealer_hand[1] == ('?', '?') and card_value(dealer_hand[0]) in [10,11]:
+        display("\nDealer is checking for Blackjack...\n")
+        dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='bjcheck')
+
     # Check for dealer blackjack first
-    if hand_value(dealer_hand) == 21:
+    if dealer_hand[1] != ('?', '?') and hand_value(dealer_hand) == 21:
         if hand_value(initial_hand) == 21:
             #NOTE: I kind of like the idea of printing blackjack results before the ===FINAL RESULTS=== Section
             #But to keep things simple I'm commenting all of that out for now. 
@@ -248,8 +256,8 @@ def play_round(
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]
             
-            new_hand1 = [card1, get_card(deck, display_emergency_reshuffle)]
-            new_hand2 = [card2, get_card(deck, display_emergency_reshuffle)]
+            new_hand1 = [card1, get_card(deck, display_emergency_reshuffle, msg = 'splithand1')]
+            new_hand2 = [card2, get_card(deck, display_emergency_reshuffle, msg = 'splithand2')]
             
             # Special handling for split aces (rule: only one card after split)
             if card1[0] == 'A':
@@ -320,6 +328,11 @@ def play_round(
     # Check if any hands need dealer comparison
     need_dealer = any(not hand_result['final'] for hand_result in hand_results)
 
+     # Resolve dealer's hole card if it's a placeholder
+    if dealer_hand[1] == ('?', '?'): 
+        dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='dhand2')
+
+
     # Play dealer's hand only if needed
     if need_dealer:
         if sleep == True:
@@ -333,7 +346,7 @@ def play_round(
         display("")
         
         while hand_value(dealer_hand) < 17:
-            dealer_hand.append(get_card(deck, display_emergency_reshuffle))
+            dealer_hand.append(get_card(deck, display_emergency_reshuffle, msg = 'dhit'))
             display(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
 
          
@@ -488,7 +501,7 @@ def run_text_mode():
         get_bet                     = text.get_bet_print,
         get_split_choice            = text.get_split_choice_print,
         get_hit_stand_dd            = text.get_hit_stand_dd_print, 
-        get_card                    = deal_card
+        get_card                    = get_card_deal
     )
 
 def run_hardcode_mode(game_or_round):
@@ -512,7 +525,7 @@ def run_hardcode_mode(game_or_round):
     get_bet                     = hc.get_bet_hardcode
     get_split_choice            = hc.get_split_choice_hardcode
     get_hit_stand_dd            = hc.get_hit_stand_dd_hardcode
-    get_card                    = deal_card
+    get_card                    = get_card_deal
 
     if game_or_round == 'game':
         play_game(

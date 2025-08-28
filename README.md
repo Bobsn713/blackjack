@@ -35,25 +35,26 @@ It is not yet possible to customize the ruleset. The current rules are:
 As of right now there are some more short-term and more long-term to-do's. 
 
 **Short Term**
-1. Improve the `primitive_play_round_cheat()` function in the following, more cosmetic ways:
-    * Celebrate Blackjack?
-    * Handle Input Busts? 
-    * Print Totals? 
-    * Handle conditional doubling (may need to split the `hit_stand_dd_hardcode()` function into two, one that returns conditional doubling information and one that applies the can_double variable to that information to give a decision)
-2. Improve `primitive_play_round_cheat()` to make splits and hits cumulative rather than starting from scratch. 
-    * This may warrant a deeper dive into whether it makes sense to instead modify and use the play_round function in `Logic.py`
-    * NOTE: The trick may be using a customized `emergency_reshuffle_cheat()` function. Because the deck should be empty, instead of dealing we can maybe prompt for the new card drawn at the table? This might be too hacky though. 
-3. Standardize and improve the visuals for both the text-based gameplay and the cheat gameplay
+1. Improve `play_round_cheat()` (currently called `test_play_round()`) 
+    * URGENT: (?,?) breaks Logic if player gets Blackjack
+    * URGENT: Dealer card is asked for before ==Dealer's Turn== Screen
+    * Print Totals along the way? 
+    * Play with what needs to happen in `Welcome.py` vs the `test_play_round()` function and also with shifting to a `play_game()` instead of `play_round()` model
+    * Longer term, this should be integrated into a play game function
+2. Standardize and improve the visuals for both the text-based gameplay and the cheat gameplay
     * I think the best way to think of this is as individual frames, separated by something like headers or horizontal lines and stalled on with time.sleeps
-4. Add a loading bar to the perfomance tracker
-5. Improve error handling for model entry in 'simulate' functionality. 
-6. Add p-values/measures of variance to performance tracker
-7. Simplify dependency injection
-8. Add betting strategies to the simulation
+3. Add a loading bar to the perfomance tracker
+4. Improve error handling for model entry in 'simulate' functionality. 
+5. Add p-values/measures of variance to performance tracker
+6. Simplify dependency injection
+7. Add betting strategies to the simulation
+8. Consider making sleep parameter accept sleep times rather than being boolean
+9. Better cosmetics for the outtro
     
 **Long Term**
 0. Semi-long term, building out the model training functionality. 
 1. Integrate card counting strategies. This will include alowing for dynamically changing some functions from a play_round model to a play_game model. 
+    * Note: This includes implementing deck tracking for the 'cheat' gamemode
 2. Make rules customizable. 
 3. Refactoring `Logic.py` to make it less _default textbased_
 4. Maybe making a GUI. 

@@ -300,3 +300,76 @@ So right now I have the following ways to play:
  - Performance Tracker (imit or hardcode)
 
  - Cheat Mode (Rounds only for now)
+
+
+# Here's Gemini's idea for simplifying my dependency injection
+class PlayStrategy:
+    def get_bet(self, cash):
+        raise NotImplementedError
+
+    def get_split_choice(self, hand, dealer_hand):
+        raise NotImplementedError
+
+    def get_hit_stand_dd(self, hand, dealer_hand, can_double):
+        raise NotImplementedError
+    
+    def get_card(self, deck, display_emergency_reshuffle):
+        return deal_card(deck, display_emergency_reshuffle) # Default behavior
+
+    def display(self, *args, **kwargs):
+        print(*args, **kwargs)
+
+    def display_hand(self, hand, hidden=False):
+        return text.display_hand_print(hand, hidden)
+
+    def display_emergency_reshuffle(self):
+        text.display_emergency_reshuffle_print()
+
+    def display_final_results(self, round_results):
+        text.display_final_results_print(round_results)
+
+########
+class HumanStrategy(bj.PlayStrategy):
+    def get_bet(self, cash):
+        return txt.get_bet_print(cash)
+
+    def get_split_choice(self, hand, dealer_hand):
+        return txt.get_split_choice_print(hand, dealer_hand)
+
+    def get_hit_stand_dd(self, hand, dealer_hand, can_double):
+        return txt.get_hit_stand_dd_print(hand, dealer_hand, can_double)
+    
+class CheatStrategy(bj.PlayStrategy):
+    def get_split_choice(self, player_hand, dealer_hand):
+        return get_split_choice_cheat(player_hand, dealer_hand)
+
+    def get_hit_stand_dd(self, player_hand, dealer_hand, can_double):
+        return get_hit_stand_dd_cheat(player_hand, dealer_hand, can_double)
+
+    def get_card(self, deck, display_emergency_reshuffle):
+        return get_card_cheat(deck, display_emergency_reshuffle)
+    
+######
+def play_round(
+    # Game State
+    cash,
+    deck,
+    sleep,
+    strategy, # Pass the strategy object
+
+    # Optional: Pre-dealt cards for cheat mode
+    initial_hand = None,
+    dealer_hand = None
+    ):
+
+    outcomes = [] 
+    
+    if initial_hand is None:
+        initial_hand = [strategy.get_card(deck, strategy.display_emergency_reshuffle), strategy.get_card(deck, strategy.display_emergency_reshuffle)]
+    if dealer_hand is None:
+        dealer_hand = [strategy.get_card(deck, strategy.display_emergency_reshuffle), strategy.get_card(deck, strategy.display_emergency_reshuffle)]
+
+    bet = strategy.get_bet(cash)
+
+    strategy.display(f"\nPlayer hand: {strategy.display_hand(initial_hand)}")
+    strategy.display(f"Dealer hand: {strategy.display_hand(dealer_hand, hidden=True)}")

@@ -43,16 +43,20 @@ while keep_playing:
             get_bet                      = txt.get_bet_print,
             get_split_choice             = txt.get_split_choice_print,
             get_hit_stand_dd             = txt.get_hit_stand_dd_print,
-            get_card                     = bj.deal_card,
+            get_card                     = bj.get_card_deal,
             display_hand                 = txt.display_hand_print,
             display_emergency_reshuffle  = txt.display_emergency_reshuffle_print,
             sleep                        = True,
             display_final_results        = txt.display_final_results_print
         )
     elif mode_choice in ['cheat', 'c']:
+        print("="*80)
+        print("New Game")
+        print("="*80)
         run_again = True
         while run_again:
-            ch.primitive_play_round_cheat()
+            #ch.primitive_play_round_cheat()
+            ch.test_play_round()
             time.sleep(1)
             another_round = txt.get_another_round_print()
             print()

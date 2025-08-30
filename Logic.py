@@ -214,16 +214,20 @@ def play_round(
 
     # Check for player blackjack
     if hand_value(initial_hand) == 21:
-        # display("Blackjack!")
+        display("\nBlackjack!\n")
         # display("Player Wins!")
         # display(f"\nPlayer hand: {display_hand(initial_hand)}")
         # display(f"Dealer hand: {display_hand(dealer_hand)}")
+
+        if dealer_hand[1] == ('?', '?'):
+            dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg = 'dhand2')
 
         round_results = { 
                 'cash_changes': [int(1.5 * bet)],
                 'player_hands' : [initial_hand],
                 'dealer_hand': dealer_hand, 
                 'outcomes' : ['Player Blackjack']}
+        
 
         display_final_results(round_results)
         return round_results

@@ -36,8 +36,7 @@ As of right now there are some more short-term and more long-term to-do's.
 
 **Short Term**
 1. Improve `play_round_cheat()` (currently called `test_play_round()`) 
-    * URGENT: (?,?) breaks Logic if player gets Blackjack
-    * URGENT: Dealer card is asked for before ==Dealer's Turn== Screen
+    * URGENT: Dealer card is asked for before ==Dealer's Turn== Screen (There is no good time to ask for a dealer's card if it's not already given (this is true for the Blackjack as well), maybe that should be handled in the the display final results function?)
     * Print Totals along the way? 
     * Play with what needs to happen in `Welcome.py` vs the `test_play_round()` function and also with shifting to a `play_game()` instead of `play_round()` model
     * Longer term, this should be integrated into a play game function

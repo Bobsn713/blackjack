@@ -1,6 +1,7 @@
 # Import libraries
 import random
 import time 
+import pyfiglet
 import Text as text
 import Hardcode as hc
 
@@ -92,9 +93,11 @@ def play_individual_hand(
 
         if h_or_s == "hit":
             hand.append(get_card(deck, display_emergency_reshuffle, msg = 'hit'))
-            display(f"\nYou drew: {display_hand([hand[-1]])}")
+            display(f"\nYou Drew: {display_hand([hand[-1]])}")
+            display()
             display(f"Player Hand: {display_hand(hand)}")
             display(f"Dealer Hand: {display_hand(dealer_hand, True)}")
+            display()
 
             if hand_value(hand) > 21:
                 display("Bust!")
@@ -156,19 +159,14 @@ def play_round(
     get_hit_stand_dd, 
     get_card,
     ):
-
-    print('='*40)
-    print("NEW ROUND")
-    print('='*40)
-
     bet = get_bet(cash)
 
     outcomes = [] # is this where I should make this? 
     initial_hand = get_card(deck, display_emergency_reshuffle, msg = 'phand')
     dealer_hand = [get_card(deck, display_emergency_reshuffle, msg = 'dhand1'), get_card(deck, display_emergency_reshuffle, msg = 'dhand?')]
 
-    display(f"\nPlayer hand: {display_hand(initial_hand)}")
-    display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
+    display(f"\nPlayer Hand: {display_hand(initial_hand)}")
+    display(f"Dealer Hand: {display_hand(dealer_hand, hidden=True)}")
 
     # NOTE: THESE BLACKJACK INSTANCES DONT DO THE FULL RESULTS PRINTOUT 
     # because they return early.
@@ -288,8 +286,8 @@ def play_round(
         # Print the hand header BEFORE calling play_individual_hand
         if is_split_game:
             display(f"\n--- Playing Hand {i+1} ---") # More prominent header
-            display(f"Player hand: {display_hand(hand)}")
-            display(f"Dealer hand: {display_hand(dealer_hand, hidden=True)}")
+            display(f"Player Hand: {display_hand(hand)}")
+            display(f"Dealer Hand: {display_hand(dealer_hand, hidden=True)}")
 
         if is_split_ace_initial:
             display("Split Aces: This hand received one card and must stand.")
@@ -332,11 +330,6 @@ def play_round(
     # Check if any hands need dealer comparison
     need_dealer = any(not hand_result['final'] for hand_result in hand_results)
 
-     # Resolve dealer's hole card if it's a placeholder
-    if dealer_hand[1] == ('?', '?'): 
-        dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='dhand2')
-
-
     # Play dealer's hand only if needed
     if need_dealer:
         if sleep == True:
@@ -346,12 +339,17 @@ def play_round(
         display("Dealer's turn:")
         display("="*40)
 
-        display(f"\nDealer hand: {display_hand(dealer_hand)}")
+        # Resolve dealer's hole card if it's a placeholder
+        if dealer_hand[1] == ('?', '?'): 
+            display()
+            dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='dhand2')
+
+        display(f"\nDealer Hand: {display_hand(dealer_hand)}")
         display("")
         
         while hand_value(dealer_hand) < 17:
             dealer_hand.append(get_card(deck, display_emergency_reshuffle, msg = 'dhit'))
-            display(f"Dealer drew: {display_hand([dealer_hand[-1]])}")
+            display(f"Dealer Drew: {display_hand([dealer_hand[-1]])}")
 
          
 
@@ -407,6 +405,11 @@ def play_round(
             'outcomes' : outcomes #list
             }
     
+    # Resolve dealer's hole card if it's a placeholder
+    if dealer_hand[1] == ('?', '?'): 
+        display()
+        dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='dhand2')
+
     display_final_results(round_results)
     return round_results
 
@@ -428,7 +431,12 @@ def play_game(
     get_hit_stand_dd, 
     get_card
 ):
-
+    message = "STARTING NEW GAME..."
+    buffer = int((80 - len(message))/2)
+    display('='*80)
+    display("||", " " * (buffer - 4), message, " " * (buffer - 4), "||")
+    display('='*80)
+    display()
     cash = starting_cash
     deck = create_deck()
     shuffle_deck(deck)
@@ -450,7 +458,15 @@ def play_game(
     #Just for formatting
     #display("\n") #Do I need this?
 
+    round_num = 0
     while cash > 0:
+        round_num += 1
+        message = f"Round {round_num}"
+        buffer = int((80 - len(message))/2)
+        #display('-'*80)
+        display(" " * buffer, message, " " * buffer)
+        display('-'*80)
+
         result_dict = play_round(
                         # Game State
                         cash,
@@ -479,12 +495,13 @@ def play_game(
 
         display(f"\nCash: ${cash}")
         if cash <= 0:
-            display("Game over - out of money!\n")
+            display("Game Over - Out of Money!\n")
             break
         again = get_another_round()
-        display("-" * 50)
+        display("-" * 80)
         if again != 'y':
             display(f"Final Cash: ${cash}")
+            display()
             display("Thanks for playing!\n")
             break
 

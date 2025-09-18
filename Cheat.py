@@ -50,22 +50,6 @@ def get_dealer_upcard_cheat():
         
     return clean_upcard[0]
 
-# This has a number of problems/points to improve upon (listed in Welcome.py)
-def primitive_play_round_cheat(): # Should I just be calling the play_round function from logic here ?
-    hand = get_hand_cheat()
-    d_upcard = get_dealer_upcard_cheat()
-    print()
-
-    if hand[0][0] == hand[1][0]: # Is this robust enough?
-        s_or_n = hc.get_split_choice_hardcode(hand, d_upcard) # Dealer's second card is ignored within the function
-        if s_or_n == 'y':
-            print('Split')
-            return
-
-    hsd = hc.get_hit_stand_dd_hardcode(hand, d_upcard, True)
-    print()
-    print(hsd.capitalize())
-
 def get_split_choice_cheat(player_hand, dealer_hand):
     result = hc.get_split_choice_hardcode(player_hand, dealer_hand)
 
@@ -73,16 +57,12 @@ def get_split_choice_cheat(player_hand, dealer_hand):
 
     if result == 'y':
         print()
-        print('#############')
-        print("SPLIT")
-        print('#############')
+        print("** RECOMMENDATION: SPLIT **")
         print()
         print("Play each hand one at a time")
     else:
         print()
-        print('#############')
-        print("Don't Split")
-        print('#############')
+        print("** RECOMMENDATION: DON'T SPLIT **")
 
     print()
     return result
@@ -93,9 +73,7 @@ def get_hit_stand_dd_cheat(player_hand, dealer_hand, can_double):
     time.sleep(1) # Brief delay after the split decision
 
     print()
-    print('#############')
-    print(result.capitalize())
-    print('#############')
+    print(f"** RECOMMENDATION: {result.upper()}**")
     print()
     return result
 
@@ -105,10 +83,10 @@ def get_card_cheat(deck, display_emergency_reshuffle, msg):
         'dd' : 'Card After Double Down:',
         'splithand1' : 'First Card after Split: ', # Should probably display which hand this goes on
         'splithand2' : 'Second Card After Split: ', # Ditto
-        'dhit' : "Dealer's Card After Hit: ", 
+        'dhit' : "Dealer Card After Hit: ", 
         ###
         'dhand1' : 'Dealer Upcard: ', 
-        'dhand2' : 'Dealer Card: ',
+        'dhand2' : 'Dealer Seond Card: ',
         'bjcheck' : 'Dealer Blackjack? (if yes, enter card, to skip press Enter): '  # This needs to be cleaner
     }
 
@@ -135,13 +113,12 @@ def get_card_cheat(deck, display_emergency_reshuffle, msg):
             else: 
                 print("Invalid input. Enter a single valid card or press Enter to skip.")
 
-    run_again = True
-    while run_again: 
+    while True: 
         upcard_raw = input(msg_prompt[msg]).upper()
         clean_card = regex_parse_input(upcard_raw)
 
         if len(clean_card) == 1:
-            run_again = False
+            break
         else: 
             print("Please enter a valid, single card.")
             print("Cards can be entered as rank suit pairs, e.g. 'KD', '4d'")
@@ -153,7 +130,7 @@ def get_card_cheat(deck, display_emergency_reshuffle, msg):
         
     return clean_card[0]
 
-def test_play_round():
+def play_round_cheat():
     deck = bj.create_deck()
     bj.shuffle_deck(deck)
 
@@ -173,38 +150,23 @@ def test_play_round():
         get_card                    = get_card_cheat, 
     )
 
+def play_game_cheat():
+    bj.play_game(
+        sleep                        = True,
+        
+        display                      = print,
+        display_hand                 = txt.display_hand_print,
+        display_emergency_reshuffle  = txt.display_emergency_reshuffle_print,
+        display_final_results        = txt.display_final_results_print,
 
-# The Logic play_round version
-# def play_round_cheat(): 
-#     hand = get_hand_cheat()
-#     d_upcard = get_dealer_upcard_cheat()
-#     dealer_hand = [d_upcard[0], ('2', 'H')] #Second card is fake, just so things don't break
+        get_another_round            = txt.get_another_round_print,
+        get_bet                      = txt.get_bet_print,
+        get_split_choice             = get_split_choice_cheat,
+        get_hit_stand_dd             = get_hit_stand_dd_cheat,
+        get_card                     = get_card_cheat,
+    )
 
-#     # There is an equivalent statement int Logic's play_round() function but it's a headache to use right now. 
-#     print(f"\nPlayer hand: {txt.display_hand_print(hand)}")
-#     print(f"Dealer hand: {txt.display_hand_print(dealer_hand, hidden=True)}")
-#     print()
 
-#     return bj.play_round(
-#             # Game State
-#             cash = 1000, #dummy cash
-#             deck = [], #dummy deck      
-#             sleep = False,
 
-#             # Display Functions
-#             display = hc.display_nothing_hardcode, 
-#             display_hand = hc.display_nothing_hardcode, 
-#             display_emergency_reshuffle = hc.display_nothing_hardcode, 
-#             display_final_results =hc.display_nothing_hardcode,
-
-#             # Get Functions
-#             get_bet = lambda cash: 1, 
-#             get_split_choice = get_split_choice_cheat, 
-#             get_hit_stand_dd = get_hit_stand_dd_cheat, 
-
-#             # Optional: Pre-dealt cards for cheat mode
-#             initial_hand = hand,
-#             dealer_hand = dealer_hand
-#             )
 if __name__ == "__main__":
-    test_play_round()
+    play_game_cheat()

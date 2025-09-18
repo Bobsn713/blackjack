@@ -63,7 +63,7 @@ def display_final_results_print(round_results):
         cash_sign = "-" if round_results['cash_changes'][i] < 0 else "+"
 
         print(f"\n{hand_label}: {display_hand_print(round_results['player_hands'][i])} (Total: {hand_value(round_results['player_hands'][i])})")
-        print(f"Dealer hand: {display_hand_print(round_results['dealer_hand'])} (Total: {hand_value(round_results['dealer_hand'])})")
+        print(f"Dealer Hand: {display_hand_print(round_results['dealer_hand'])} (Total: {hand_value(round_results['dealer_hand'])})")
         print(f"Result: {outcome} - {w_l_p} ({cash_sign}${abs(round_results['cash_changes'][i])})")
 
     #Should I make this only if split?

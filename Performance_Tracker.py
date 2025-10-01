@@ -4,6 +4,10 @@ import Text as text
 import matplotlib.pyplot as plt
 import Imitation as imit
 
+import tqdm 
+import numpy as np 
+from scipy.stats import t
+
 # 3 good ways to improve this:
 # 1. Look into tqdm progress bar
 # 2. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
@@ -37,7 +41,7 @@ def performance_tracker(model, iterations = 10000):
     else: 
         raise ValueError("Pass either 'imitation' or 'hardcode' to 'run_hardcode_mode()'")
 
-    for i in range(iterations):     
+    for i in tqdm.tqdm(range(iterations)):     
         deck = bj.create_deck()
         bj.shuffle_deck(deck)
 
@@ -84,10 +88,23 @@ def performance_tracker(model, iterations = 10000):
 
         #Another thing to potentially add is keeping track of which hands are splits and doubles
 
+
+
     # Cumulative Stats
     cumulative_cash_change = sum(round_cash_changes)
     expected_return_per_hand = cumulative_cash_change / iterations
+    std_dev = np.std(round_cash_changes, ddof=1)
+    variance = std_dev ** 2
     total_hands = len(hand_outcomes_clean)
+    std_error = std_dev / np.sqrt(total_hands)
+
+
+    confidence = 0.95
+    alpha = 1 - confidence 
+    t_crit = t.ppf(1 - alpha/2, df=total_hands-1)
+    ci_low = expected_return_per_hand - t_crit * std_error
+    ci_high = expected_return_per_hand + t_crit * std_error
+
 
     #Outcome Counters
     p_bj = hand_outcomes_clean.count('Player Blackjack')
@@ -133,6 +150,8 @@ def performance_tracker(model, iterations = 10000):
     print(f"\nResults of {iterations} iterations...")
     print(f"Cumulative Outcome: {cumulative_cash_change} units")
     print(f"Expected Return (per hand): {expected_return_per_hand}")
+    print(f"Confidence: {confidence*100}%    ({ci_low:.4}, {ci_high:.4})")
+    print(f"Standard Deviation: {std_dev:.5}    Variance: {variance:.5}")
     print()
     print("Totals:")
     print(f"Won: {won}   Push: {push_incl}   Lost: {lost}")
@@ -152,4 +171,4 @@ def performance_tracker(model, iterations = 10000):
     plt.show()
 
 if __name__ == "__main__":
-    performance_tracker('hardcode')
+    performance_tracker('hardcode', iterations = 100000)

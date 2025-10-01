@@ -49,7 +49,7 @@ while keep_playing:
 
         )
     elif mode_choice in ['cheat', 'c']:
-        game_or_round = None
+        game_or_round = None # TODO: Decide if I even want to give the option to play by round...
         while True:
             print("Would you like to track bets and play with a consistent deck? (y/n)")
             game_or_round_input = input(">>> ").lower()

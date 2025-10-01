@@ -35,13 +35,10 @@ It is not yet possible to customize the ruleset. The current rules are:
 As of right now there are some more short-term and more long-term to-do's. 
 
 **Short Term**
-1. Add a loading bar to the perfomance tracker
-2. Add p-values/measures of variance to performance tracker
-3. Simplify dependency injection
-4. Extend sleeps between game phases
-5. **Error I Found**: In cheat mode, you can enter more than a two card hand. 
-6. Eventually add edge functionality in case 'cheat' player never sees dealer's upcard
-7. Add betting strategies to the simulation
+1. Decide if cheat mode should even have a `play_round` option...
+2. Simplify dependency injection
+3. Eventually add edge functionality in case 'cheat' player never sees dealer's upcard
+4. Add betting strategies to the simulation
     
 **Long Term**
 1. Add betting strategies to simulation mode

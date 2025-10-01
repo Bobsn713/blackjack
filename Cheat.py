@@ -24,9 +24,10 @@ def get_hand_cheat():
         raw_hand = input("Player Hand: ").upper()
         clean_hand = regex_parse_input(raw_hand)     
 
-        if len(clean_hand) >= 2: 
+        if len(clean_hand) == 2: 
             run_again = False
         else: 
+            print()
             print("Please enter a valid 2 card hand.")
             print("Cards can be entered as rank suit pairs, e.g. 'KD, 10C', '4d5s'")
             print("or simply as ranks, e.g. 'kk', '4, 9'")
@@ -43,6 +44,7 @@ def get_dealer_upcard_cheat():
         if len(clean_upcard) == 1:
             run_again = False
         else: 
+            print()
             print("Please enter a valid, single card.")
             print("Cards can be entered as rank suit pairs, e.g. 'KD', '4d'")
             print("or simply as ranks, e.g. 'k', '4'")
@@ -86,7 +88,7 @@ def get_card_cheat(deck, display_emergency_reshuffle, msg):
         'dhit' : "Dealer Card After Hit: ", 
         ###
         'dhand1' : 'Dealer Upcard: ', 
-        'dhand2' : 'Dealer Seond Card: ',
+        'dhand2' : 'Dealer Second Card: ',
         'bjcheck' : 'Dealer Blackjack? (if yes, enter card, to skip press Enter): '  # This needs to be cleaner
     }
 
@@ -120,6 +122,7 @@ def get_card_cheat(deck, display_emergency_reshuffle, msg):
         if len(clean_card) == 1:
             break
         else: 
+            print()
             print("Please enter a valid, single card.")
             print("Cards can be entered as rank suit pairs, e.g. 'KD', '4d'")
             print("or simply as ranks, e.g. 'k', '4'")

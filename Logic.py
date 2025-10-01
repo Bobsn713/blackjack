@@ -161,7 +161,7 @@ def play_round(
     ):
     bet = get_bet(cash)
 
-    outcomes = [] # is this where I should make this? 
+    outcomes = [] 
     initial_hand = get_card(deck, display_emergency_reshuffle, msg = 'phand')
     dealer_hand = [get_card(deck, display_emergency_reshuffle, msg = 'dhand1'), get_card(deck, display_emergency_reshuffle, msg = 'dhand?')]
 
@@ -370,7 +370,7 @@ def play_round(
                     'outcomes' : outcomes}
     
     if sleep == True:
-        time.sleep(1)
+        time.sleep(3)
 
     cash_changes = []
 
@@ -493,7 +493,7 @@ def play_game(
             deck = create_deck()
             shuffle_deck(deck)
 
-        display(f"\nCash: ${cash}")
+        display(f"Cash: ${cash}")
         if cash <= 0:
             display("Game Over - Out of Money!\n")
             break

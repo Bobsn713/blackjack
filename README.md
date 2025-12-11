@@ -35,18 +35,17 @@ It is not yet possible to customize the ruleset. The current rules are:
 As of right now there are some more short-term and more long-term to-do's. 
 
 **Short Term**
-1. Decide if cheat mode should even have a `play_round` option...
-2. Simplify dependency injection
+1. Build out the model training functionality. 
+2. Decide if cheat mode should even have a `play_round` option...
 3. Eventually add edge functionality in case 'cheat' player never sees dealer's upcard
 4. Add betting strategies to the simulation
     
 **Long Term**
-1. Add betting strategies to simulation mode
-2. Build out the model training functionality. 
-3. Integrate card counting strategies. This will include alowing for dynamically changing some functions from a play_round model to a play_game model. 
+1. Simplify dependency injection
+2. Integrate card counting strategies. This will include alowing for dynamically changing some functions from a play_round model to a play_game model. 
     * Note: This includes implementing deck tracking for the 'cheat' gamemode
-4. Make rules customizable. 
-5. Maybe making a GUI?
+3. Make rules customizable. 
+4. Maybe making a GUI?
 
 ## Sources
 Source for charts:

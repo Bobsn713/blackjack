@@ -2,7 +2,7 @@
 import random
 import time 
 import pyfiglet
-import Text as text
+import Text as txt
 import Hardcode as hc
 
 # Generate a deck of cards
@@ -416,26 +416,22 @@ def play_round(
 
 def play_game(
     # Game State
-    sleep, 
+    sleep                        = True,
 
     # Display Functions
-    display, 
-    display_hand,
-    display_emergency_reshuffle, 
-    display_final_results,
+    display                      = print,
+    display_hand                 = txt.display_hand_print,
+    display_emergency_reshuffle  = txt.display_emergency_reshuffle_print,
+    display_final_results        = txt.display_final_results_print,
 
     # Get Functions
-    get_another_round,
-    get_bet,
-    get_split_choice,
-    get_hit_stand_dd, 
-    get_card
+    get_another_round            = txt.get_another_round_print,
+    get_bet                      = txt.get_bet_print,
+    get_split_choice             = txt.get_split_choice_print,
+    get_hit_stand_dd             = txt.get_hit_stand_dd_print,
+    get_card                     = get_card_deal,
 ):
-    message = "STARTING NEW GAME..."
-    buffer = int((80 - len(message))/2)
-    display('='*80)
-    display("||", " " * (buffer - 4), message, " " * (buffer - 4), "||")
-    display('='*80)
+    txt.print_title_box(["STARTING NEW GAME..."])
     display()
     cash = starting_cash
     deck = create_deck()
@@ -463,7 +459,7 @@ def play_game(
         round_num += 1
         message = f"Round {round_num}"
         buffer = int((80 - len(message))/2)
-        #display('-'*80)
+        display('-'*80) if round_num != 1 else None
         display(" " * buffer, message, " " * buffer)
         display('-'*80)
 
@@ -495,14 +491,15 @@ def play_game(
 
         display(f"Cash: ${cash}")
         if cash <= 0:
-            display("Game Over - Out of Money!\n")
+            txt.print_title_box(["GAME OVER", "~ OUT OF MONEY! ~"])
+            display()
             break
         again = get_another_round()
-        display("-" * 80)
+        #display("-" * 80)
         if again != 'y':
-            display(f"Final Cash: ${cash}")
+            txt.print_title_box(["GAME OVER", f"~ FINAL CASH: ${cash} ~"])
             display()
-            display("Thanks for playing!\n")
+            display("\033[3mThanks for Playing!\033[0m\n") #These are italics
             break
 
 
@@ -513,15 +510,15 @@ def run_text_mode():
 
         # Display Functions
         display                     = print, 
-        display_hand                = text.display_hand_print,
-        display_emergency_reshuffle = text.display_emergency_reshuffle_print,
-        display_final_results       = text.display_final_results_print,
+        display_hand                = txt.display_hand_print,
+        display_emergency_reshuffle = txt.display_emergency_reshuffle_print,
+        display_final_results       = txt.display_final_results_print,
 
         # Get Functions
-        get_another_round           = text.get_another_round_print,
-        get_bet                     = text.get_bet_print,
-        get_split_choice            = text.get_split_choice_print,
-        get_hit_stand_dd            = text.get_hit_stand_dd_print, 
+        get_another_round           = txt.get_another_round_print,
+        get_bet                     = txt.get_bet_print,
+        get_split_choice            = txt.get_split_choice_print,
+        get_hit_stand_dd            = txt.get_hit_stand_dd_print, 
         get_card                    = get_card_deal
     )
 
@@ -537,9 +534,9 @@ def run_hardcode_mode(game_or_round):
 
     # Display Functions
     display                     = print
-    display_hand                = text.display_hand_print # or hc.display_hand_hardcode
-    display_emergency_reshuffle = text.display_emergency_reshuffle_print # or hc.emergency_reshuffle_hardcode
-    display_final_results       = text.display_final_results_print
+    display_hand                = txt.display_hand_print # or hc.display_hand_hardcode
+    display_emergency_reshuffle = txt.display_emergency_reshuffle_print # or hc.emergency_reshuffle_hardcode
+    display_final_results       = txt.display_final_results_print
 
     # Get Functions
     get_another_round           = hc.get_another_round_hardcode

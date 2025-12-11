@@ -71,6 +71,15 @@ def display_final_results_print(round_results):
     net_cash_sign = "-" if net_change < 0 else "+"
     print(f"\nNet Change: {net_cash_sign}${abs(net_change)}")
 
+def print_title_box(messages):
+    width = 80
+    inner = width - 4   # because each side uses "||" (2 chars each → 4 chars total)
+    print()
+    print("=" * width)
+    for message in messages: 
+        print("||" + message.center(inner)  + "||")
+    print("=" * width)
+
 
 ### GET FUNCTIONS
 

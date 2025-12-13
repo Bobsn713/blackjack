@@ -5,6 +5,7 @@ import Logic as bj
 import Text as txt
 import Performance_Tracker as pt
 import Cheat as ch
+import Train as tr
 
 def clear():
         print("\n" * 30)
@@ -64,12 +65,14 @@ def main_loop():
 
             pt.performance_tracker(model,iterations)
         elif mode_choice in ['train', 't']:
-            message = "Sorry, this functionality isn't quite ready yet."
-            len_mes = len(message)
-            buffer = int((80 - len(message))/2)
-            print("#"*80)
-            print(" " * buffer, message, " " * buffer)
-            print("#"*80)
+            tr.train_model()
+
+            # message = "Sorry, this functionality isn't quite ready yet."
+            # len_mes = len(message)
+            # buffer = int((80 - len(message))/2)
+            # print("#"*80)
+            # print(" " * buffer, message, " " * buffer)
+            # print("#"*80)
         elif mode_choice in ['quit', 'q']:
             keep_playing = False
         else: 

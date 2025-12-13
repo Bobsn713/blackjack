@@ -68,11 +68,11 @@ def add_to_csv(iterations):
             sleep = False, 
             get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
             get_split_choice = hc.get_split_choice_hardcode, #split_choice_to_csv, 
-            display = hc.display_hardcode, 
+            display = hc.display_nothing_hardcode, 
             get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, #hit_stand_dd_to_csv, 
             display_hand = text.display_hand_print, # I think as long as the display function is empty this shouldn't print
             display_emergency_reshuffle = text.display_hand_print, #Ditto
-            display_final_results = hc.display_hardcode
+            display_final_results = hc.display_nothing_hardcode
         )
 
 #add_to_csv(100000)

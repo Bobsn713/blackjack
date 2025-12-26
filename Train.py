@@ -27,25 +27,73 @@ def onehot_card(card):
     return np.array(one_hot)
 # Turn a card into a hand just by adding two onehot_card arrays
 
+split_result_mapping = {
+    'n' : 0, 
+    'y' : 1,
+    'NA' : 2 # included for reader clarity, not function
+}
+hsd_result_mapping = {
+    'hit' : 0,
+    'stand' : 1,
+    'double down' : 2,
+    'NA' : 3 # do I even need this?
+}
+
 # Can I make a hardcode_to_csv function that works for both splits and hsds so there can be one training set? 
 # Something like (onehot_phand, d_upcard, can_split, can_double, split, hsd)
 
-def make_training_data(hands):
+def both_to_csv(player_hand, dealer_hand, can_double=0): #can double part is hacky but it should let me use the same function for split and hsd
+    onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    for card in player_hand:
+        onehot_p_hand += onehot_card(card)
+    
+    onehot_d_upcard = onehot_card(dealer_hand[0])
+
+    can_split = int(bj.can_split(player_hand)) # will this break on hands with multiple splits?
+
+    # Uncomment the following if we switch to a game-based model vs this round-based model
+    can_double = int(len(player_hand) == 2) # and cash >= 2 * bet
+
+    raw_split_result = hc.get_split_choice_hardcode(player_hand, dealer_hand)
+    split_result = split_result_mapping[raw_split_result]
+
+    raw_hsd_result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double)
+    hsd_result = hsd_result_mapping[raw_hsd_result]
+
+    # Overrides
+    if can_split == 0: 
+        split_result = 2 #Split_or_not is not allowed
+    
+    if split_result == 1: 
+        hsd_result = 3 #Split makes hsd decision redundant
+
+    with open(os.path.join(csv_dir, 'training_data.csv'), 'a', newline='') as csv_file:
+        split_or_not = csv.writer(csv_file)
+        split_or_not.writerow([onehot_p_hand, onehot_d_upcard, can_split, can_double, split_result, hsd_result])
+
+    if can_split == 1: 
+        return raw_split_result
+    else: 
+        return raw_hsd_result
+
+def make_training_data(iterations):
     deck = bj.create_deck()
     bj.shuffle_deck(deck)
-        
-    bj.play_round(
-        cash = 1000, #infinite cash relative to bet size
-        deck = deck, 
-        sleep = False, 
-        get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-        get_split_choice = hc.get_split_choice_hardcode, #split_choice_to_csv, 
-        display = hc.display_nothing_hardcode, 
-        get_hit_stand_dd = hc.get_hit_stand_dd_hardcode, #hit_stand_dd_to_csv, 
-        display_hand = hc.display_nothing_hardcode, 
-        display_emergency_reshuffle = hc.display_nothing_hardcode, 
-        display_final_results = hc.display_nothing_hardcode
-    )
+    
+    for i in range(iterations): 
+        bj.play_round(
+            cash = 1000, #infinite cash relative to bet size
+            deck = deck, 
+            sleep = False, 
+            get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
+            get_split_choice = both_to_csv,
+            get_card = bj.get_card_deal,
+            display = hc.display_nothing_hardcode, 
+            get_hit_stand_dd = both_to_csv,  
+            display_hand = hc.display_nothing_hardcode, 
+            display_emergency_reshuffle = hc.display_nothing_hardcode, 
+            display_final_results = hc.display_nothing_hardcode
+        )
     return
 
 def train_model(): 
@@ -144,3 +192,5 @@ def train_model():
     hsd_optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
 #train_model()
+
+make_training_data(10)

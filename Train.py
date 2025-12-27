@@ -378,7 +378,8 @@ def train_model():
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
 
-    print(f"\033[3mTraining Completed in {elapsed_time:.4f} seconds!\033[0m")
+    print(f"\033[3mTraining Completed in {elapsed_time:.4f} seconds.\033[0m")
+    print("-"*80)
 
     # Graphing
     plt.plot(test_accs)
@@ -445,7 +446,7 @@ def load_model(model_name):
 
     return model
 
-def get_choices_nn(player_hand, dealer_hand, model_name):
+def get_choices_nn(player_hand, dealer_hand, loaded_model):
     can_double = int(len(player_hand)==2)
     row, _, _ = encode_split_hsd(player_hand, dealer_hand, can_double)
 
@@ -457,11 +458,9 @@ def get_choices_nn(player_hand, dealer_hand, model_name):
 
     X = torch.cat([x1,x2,x3, x4])
     X = X.unsqueeze(0)
-
-    model = load_model(model_name)
     
     with torch.no_grad():
-        y1, y2 = model(X)
+        y1, y2 = loaded_model(X)
 
         # # Use softmax to see probabilities if you like
         # probs_split = torch.softmax(y1, dim=1)
@@ -475,23 +474,21 @@ def get_choices_nn(player_hand, dealer_hand, model_name):
 
         return split_decision, hsd_decision
     
-def get_split_choice_nn(player_hand, dealer_hand):
-    model_name = "m1.pt" #This is the hard part
-    split_decision, _ = get_choices_nn(player_hand, dealer_hand, model_name)
+def get_split_choice_nn(player_hand, dealer_hand, loaded_model):
+    split_decision, _ = get_choices_nn(player_hand, dealer_hand, loaded_model)
     return split_decision
 
-def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double):
-    model_name = "m1.pt" #This is the hard part
-    _, hsd_decision = get_choices_nn(player_hand, dealer_hand, model_name)
+def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double, loaded_model):
+    _, hsd_decision = get_choices_nn(player_hand, dealer_hand, loaded_model)
     return hsd_decision
-
-print(get_choices_nn((("K","H"),("J","S")),(("K","H"),("J","S")), "m1.pt"))
 
 
 #TODO: I need to make it so we can use trained models for inference/the performance tracker
 
-#reset_training_data()
-#make_training_data(100000)
-#load_data()
+if __name__ == '__main__':
+    print(get_choices_nn((("K","H"),("J","S")),(("K","H"),("J","S")), load_model("m1.pt")))
+    #reset_training_data()
+    #make_training_data(100000)
+    #load_data()
 
-#get_models()
+    #get_models()

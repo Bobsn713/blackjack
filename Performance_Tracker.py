@@ -3,16 +3,16 @@ import Hardcode as hc
 import Text as txt
 import matplotlib.pyplot as plt
 import Imitation as imit
+import Train as tr
 
 import tqdm 
 import time
 import numpy as np 
 from scipy.stats import t
 
-# 3 good ways to improve this:
-# 1. Look into tqdm progress bar
-# 2. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
-# 3. Make it so that it can play through decks instead of just through rounds. This will eventually make it so I can factor in card-counting strategies. 
+# 2 good ways to improve this:
+# 1. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
+# 2. Make it so that it can play through decks instead of just through rounds. This will eventually make it so I can factor in card-counting strategies. 
 
 def performance_tracker(model, iterations = 10000):
     model = model.lower()
@@ -39,8 +39,12 @@ def performance_tracker(model, iterations = 10000):
     elif model in ['hc', 'hardcode']:
         get_split_choice = hc.get_split_choice_hardcode
         get_hit_stand_dd = hc.get_hit_stand_dd_hardcode
+    elif model in tr.get_models(): # update this
+        loaded_model = tr.load_model(model)
+        get_split_choice = lambda p_hand, d_hand: tr.get_split_choice_nn(p_hand, d_hand, loaded_model)
+        get_hit_stand_dd = lambda p_hand, d_hand, can_double: tr.get_hit_stand_dd_nn(p_hand, d_hand, can_double, loaded_model)
     else: 
-        raise ValueError("Pass either 'imitation' or 'hardcode' to 'run_hardcode_mode()'")
+        raise ValueError("Pass 'imitation', 'hardcode', or a custom '.pt' file to 'run_hardcode_mode()'")
 
     start_time = time.perf_counter()
 

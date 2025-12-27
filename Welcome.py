@@ -43,11 +43,20 @@ def main_loop():
             print('\n')
             while True: 
                 print("Which model would you like to use?")
-                print("('hardcode' or 'imitation')")
+                print("Defaults: hardcode, imitation")
+                custom_models = tr.get_models()
+                display_names = [name.split('.')[0] for name in custom_models]
+                names_string = ", ".join(display_names)
+                print(f"Custom Models: {names_string}")
                 model = input(">>> ").lower() 
                 print()
 
                 if model in ['imit', 'imitation', 'hc', 'hardcode']:
+                    break
+                elif model in custom_models:
+                    break
+                elif model in display_names:
+                    model = f"{model}.pt"
                     break
                 else: 
                     print("Please enter one of the options listed.")

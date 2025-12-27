@@ -1,19 +1,58 @@
 import Logic as bj
-from torch import nn
-import torch
 import Hardcode as hc
+
+import torch
+from torch import nn 
+from torch.utils.data import Dataset, DataLoader, random_split
+
 import numpy as np
+import pandas as pd
+import tqdm 
+import matplotlib.pyplot as plt
+
 import os
 import sys
 import csv
 
+class NeuralNetwork(nn.Module):
+    def __init__(self, n_inputs, n_layers, n_p_layer, n_outputs_y1, n_outputs_y2):
+        super().__init__()
+        self.flatten = nn.Flatten()
+        
+        # Build the shared backbone
+        layers = []
+        layers.append(nn.Linear(n_inputs, n_p_layer))
+        layers.append(nn.LeakyReLU(negative_slope=0.01))
+
+        for _ in range(n_layers):
+            layers.append(nn.Linear(n_p_layer, n_p_layer))
+            layers.append(nn.LeakyReLU(negative_slope=0.01))
+
+        self.shared = nn.Sequential(*layers)
+
+        # Multi-headed output
+        self.head1 = nn.Linear(n_p_layer, n_outputs_y1)
+        self.head2 = nn.Linear(n_p_layer, n_outputs_y2)
+
+        # Initialize weights
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_uniform_(m.weight)
+            m.bias.data.fill_(1e-3)
+
+    def forward(self, x):
+        x = self.flatten(x)
+        features = self.shared(x)
+        y1 = self.head1(features)
+        y2 = self.head2(features)
+        return y1, y2
 
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 rank_to_index = {rank: i for i, rank in enumerate(ranks)}
 
 namespace = ['hardcode', 'hc', 'imitation', 'imit']
-n_inputs = 105
-n_outputs = 3
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -39,10 +78,7 @@ hsd_result_mapping = {
     'NA' : 3 # do I even need this?
 }
 
-# Can I make a hardcode_to_csv function that works for both splits and hsds so there can be one training set? 
-# Something like (onehot_phand, d_upcard, can_split, can_double, split, hsd)
-
-def split_to_csv(player_hand, dealer_hand, can_double=0): #can double part is hacky but it should let me use the same function for split and hsd
+def split_to_csv(player_hand, dealer_hand):
     onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     for card in player_hand:
         onehot_p_hand += onehot_card(card)
@@ -73,7 +109,7 @@ def split_to_csv(player_hand, dealer_hand, can_double=0): #can double part is ha
 
     return raw_split_result
     
-def hsd_to_csv(player_hand, dealer_hand, can_double=0): #can double part is hacky but it should let me use the same function for split and hsd
+def hsd_to_csv(player_hand, dealer_hand, can_double):
     onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     for card in player_hand:
         onehot_p_hand += onehot_card(card)
@@ -108,7 +144,8 @@ def make_training_data(iterations):
     deck = bj.create_deck()
     bj.shuffle_deck(deck)
     
-    for i in range(iterations): 
+    print(f"Playing {iterations:,} hands...")
+    for _ in tqdm.tqdm(range(iterations)): 
         bj.play_round(
             cash = 1000, #infinite cash relative to bet size
             deck = deck, 
@@ -123,6 +160,94 @@ def make_training_data(iterations):
             display_final_results = hc.display_nothing_hardcode
         )
     return
+
+def reset_training_data():
+    with open('csvdata/training_data.csv', 'w') as f:
+        f.write('onehot_p_hand,onehot_d_upcard,can_split,can_double,split_result,hsd_result\n')
+
+def load_data(batch_size):
+    class Blackjack_Dataset(Dataset):
+        def __init__(self, X, y1, y2):
+            self.X = X
+            self.y1 = y1
+            self.y2 = y2
+
+        def __len__(self):
+            return len(self.X)
+        
+        def __getitem__(self, idx):
+            return self.X[idx], self.y1[idx], self.y2[idx]
+        
+    df = pd.read_csv('csvdata/training_data.csv')
+
+    x1 = torch.tensor(np.vstack(df['onehot_p_hand'].apply(lambda s: np.fromstring(s[1:-1], sep=' '))), dtype=torch.float32)
+    x2 = torch.tensor(np.vstack(df['onehot_d_upcard'].apply(lambda s: np.fromstring(s[1:-1], sep=' '))), dtype=torch.float32)
+    x3 = torch.tensor(df['can_split'].values, dtype=torch.float32).unsqueeze(1)
+    x4 = torch.tensor(df['can_double'].values, dtype=torch.float32).unsqueeze(1)
+    y1 = torch.tensor(df['split_result'].values, dtype=torch.long)
+    y2 = torch.tensor(df['hsd_result'].values, dtype=torch.long)
+
+    X = torch.cat([x1,x2,x3, x4], dim=1)
+
+    dataset = Blackjack_Dataset(X,y1,y2)
+
+    n = len(dataset)
+    n_test = int(0.2 * n)
+    n_train = n - n_test
+    train_ds, test_ds = random_split(dataset, [n_train, n_test])
+
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    test_loader  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False)
+
+    return train_loader, test_loader
+
+def train_loop(dataloader, model, loss_fn, optimizer, batch_size, l1_weight):
+    size = len(dataloader.dataset)
+    model.train()
+    batch_losses = []
+
+    for batch, (X, y1, y2) in enumerate(dataloader):
+        optimizer.zero_grad()
+        pred1, pred2 = model(X)
+        loss1 = loss_fn(pred1, y1) 
+        loss2 = loss_fn(pred2, y2)
+        loss = loss1*l1_weight + loss2
+
+        batch_losses.append(loss.item())
+
+        # Backpropagation
+        loss.backward()
+        optimizer.step()
+
+        # Printing Training Update on every 100th batch
+        if (batch + 1) % 100 == 0: 
+            loss = loss.item()
+            current = batch * batch_size + len(X)
+            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+
+    return sum((batch_losses))/len(batch_losses)
+
+def test_loop(dataloader, model, loss_fn, l1_weight):
+    model.eval()
+
+    size = len(dataloader.dataset)
+    num_batches = len(dataloader)
+    test_loss, correct = 0, 0
+
+    with torch.no_grad():
+        for X, y1, y2 in dataloader: 
+            pred1, pred2 = model(X)
+
+            loss1 = loss_fn(pred1, y1)
+            loss2 = loss_fn(pred2, y2)
+            test_loss = (loss1*l1_weight + loss2).item()
+
+            correct += ((pred1.argmax(1) == y1) & (pred2.argmax(1) == y2)).type(torch.float).sum().item()
+
+    test_loss /= num_batches
+    correct /= size 
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.3f}%, Avg loss: {test_loss:>8f} \n")
+    return 100*correct, test_loss
 
 def train_model(): 
     while True:
@@ -167,58 +292,141 @@ def train_model():
     # The following prints out the model's structure but isn't really very pretty
     print("Model Structure: ")
     # build structure: list of layers, each layer is a list of neurons (represented here as '.')
-    neur_struct = [['.' for _ in range(n_p_layer)] for _ in range(n_layers)]
+    neur_struct = [['.' for _ in range(n_layers)] for _ in range(n_p_layer)]
 
-    for layer in neur_struct:
+    for i, layer in enumerate(neur_struct):
+        midpoint = len(neur_struct) // 2 
+
+        if i == midpoint - 1:
+            if n_p_layer < 3:
+                front_buffer = "        "
+                back_buffer = "        "
+            else: 
+                front_buffer = "   /    "
+                back_buffer = "   \\    "
+        elif i == midpoint:
+            front_buffer = " in     "
+            back_buffer = "    out "
+        elif i == midpoint + 1: 
+            if n_p_layer < 3:
+                front_buffer = "        "
+                back_buffer = "        "
+            else:
+                front_buffer = "   \\    "
+                back_buffer = "   /    "
+        else: 
+            front_buffer = "        "
+            back_buffer = "        "
+
+        
+        
         # a simple visual: show layer number and the neuron list
-        print(' '.join(layer))
+        print(front_buffer + ' '.join(layer) + back_buffer)
     print()
 
 
     print("Choose your training hyperparamters")
     learning_rate = float(input("Learning Rate: "))
     epochs = int(input("Epochs: "))
+    batch_size = int(input("Batch Size: "))
+    # loss_fn = 
+    # optimizer = 
+    #dataset_hands = int(input("Hands in Dataset: "))
 
     # I need to fix my torch version to make sure this is working right
     # device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
     # print(f"Device: {device}")
     device = "cpu"
 
-    class NeuralNetwork(nn.Module):
-        def __init__(self, n_layers, n_p_layer):
-            super().__init__()
-            self.flatten = nn.Flatten()
-            self.linear_relu_stack = nn.Sequential()
-            
-            layers = []
-            for i in range(n_layers):
-                if i == 0:
-                    in_features=n_inputs
-                    out_features = n_p_layer if n_layers > 1 else n_outputs
-                elif i == n_layers - 1:
-                    in_features=n_p_layer
-                    out_features= n_outputs
-                else: 
-                    in_features=n_p_layer
-                    out_features=n_p_layer
+    n_inputs = 28
+    n_outputs_y1 = 3
+    n_outputs_y2 = 4
 
-                layers.append(nn.Linear(in_features, out_features))
-
-                if i != n_layers -1:
-                    layers.append(nn.ReLU())
-
-            self.linear_relu_stack = nn.Sequential(*layers)
-
-        def forward(self, x):
-            x = self.flatten(x)
-            logits = self.linear_relu_stack(x)
-            return logits
-
-    model = NeuralNetwork(n_layers, n_p_layer).to(device)
-    print(model)
+    model = NeuralNetwork(n_inputs, n_layers, n_p_layer, n_outputs_y1, n_outputs_y2).to(device)
     loss_fn = nn.CrossEntropyLoss()
-    hsd_optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+    #input("Do you want to make new data from scratch or add to your old data?")
+    #reset_training_data()
+    #make_training_data(dataset_hands)
+
+    train_loader, test_loader = load_data(batch_size)
+
+    # Training
+    train_losses = []
+    test_losses = []
+    test_accs = []
+
+    l1_weight = 1
+
+    for t in range(epochs):
+        print(f"Epoch {t+1}\n---------------------------")
+        train_losses.append(train_loop(train_loader, model, loss_fn, optimizer, batch_size, l1_weight))
+        test_acc, test_loss = test_loop(test_loader, model, loss_fn, l1_weight)
+        test_accs.append(test_acc)
+        test_losses.append(test_loss)
+    print("Training Complete!")
+
+    # Graphing
+    plt.plot(test_accs)
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.show()
+
+    #TODO: Label epochs starting at 1 instead of at 0 for graphs
+
+    plt.plot(test_losses, color = 'tab:blue', label = 'test')
+    plt.plot(train_losses, color = 'orange', label = 'train')
+    plt.legend()
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.show()
+
+    # For zooming in 
+    # start = 30
+    # plt.plot(test_losses[start:], color = 'tab:blue', label = 'test')
+    # plt.plot(train_losses[start:], color = 'orange', label = 'train')
+    # plt.legend()
+    # plt.xlabel('Epochs')
+    # plt.ylabel('Loss')
+    # plt.show()
+
+    # Create a dictionary containing everything needed to recreate the model
+    model_params_weights = {
+        'architecture_config': {
+            'n_inputs': n_inputs,
+            'n_layers': n_layers,
+            'n_p_layer': n_p_layer,
+            'n_outputs_y1': n_outputs_y1,
+            'n_outputs_y2': n_outputs_y2
+        },
+        'model_state_dict': model.state_dict()
+    }
+
+    print("Would you like to save your model? ")
+    save_yn = input(">>> ")
+    if save_yn == "y": 
+        model_file_location = f"models/{model_name}.pt"
+        torch.save(model_params_weights, model_file_location)
+    # TODO: How do I want to integrate the performance tracker? 
 
 #train_model()
 
-make_training_data(100)
+def load_model(model_name):
+    # 1. Load the checkpoint file
+    model_file_location = f'models/{model_name}.pt'
+    checkpoint = torch.load(model_file_location)
+
+    # 2. Reconstruct the architecture using the saved config
+    model = NeuralNetwork(**checkpoint['architecture_config'])
+
+    # 3. Load the weights into that architecture
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model.eval()
+
+load_model('my_model')
+
+#reset_training_data()
+#make_training_data(100000)
+#load_data()
+

@@ -1,10 +1,11 @@
 import Logic as bj
 import Hardcode as hc
-import Text as text
+import Text as txt
 import matplotlib.pyplot as plt
 import Imitation as imit
 
 import tqdm 
+import time
 import numpy as np 
 from scipy.stats import t
 
@@ -41,6 +42,8 @@ def performance_tracker(model, iterations = 10000):
     else: 
         raise ValueError("Pass either 'imitation' or 'hardcode' to 'run_hardcode_mode()'")
 
+    start_time = time.perf_counter()
+
     for i in tqdm.tqdm(range(iterations)):     
         deck = bj.create_deck()
         bj.shuffle_deck(deck)
@@ -63,6 +66,9 @@ def performance_tracker(model, iterations = 10000):
             get_hit_stand_dd = get_hit_stand_dd, 
             get_card         = bj.get_card_deal
         )
+
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
 
         #Making Cash Lists
         hand_cash_change = return_dict['cash_changes']
@@ -145,15 +151,17 @@ def performance_tracker(model, iterations = 10000):
     perc_double_downs = round((double_downs / total_hands) * 100, 2)
 
 
-
-
-    print(f"\nResults of {iterations} iterations...")
+    print()
+    txt.print_title_box(["RESULTS"])
+    print(f"\033[3m{iterations:,} hands simulated in {elapsed_time:.4f} seconds...\033[0m")
+    print()
     print(f"Cumulative Outcome: {cumulative_cash_change} units")
     print(f"Expected Return (per hand): {expected_return_per_hand}")
     print(f"Confidence: {confidence*100}%    ({ci_low:.4}, {ci_high:.4})")
     print(f"Standard Deviation: {std_dev:.5}    Variance: {variance:.5}")
     print()
     print("Totals:")
+    print('-'*40)
     print(f"Won: {won}   Push: {push_incl}   Lost: {lost}")
     print(f"Player BJ: {p_bj}   BJ Push: {push_bj}   Dealer BJ: {d_bj}")
     print(f"Player Bust: {p_bust}   Dealer Bust: {d_bust}")
@@ -161,6 +169,7 @@ def performance_tracker(model, iterations = 10000):
     print(f"Split Hands: {split_hands}   Doubled Down Hands: {double_downs}")
     print()
     print("Percentages:")
+    print('-'*40)
     print(f"Won: {perc_won}%   Push: {perc_push_incl}%   Lost: {perc_lost}%")
     print(f"Player BJ: {perc_p_bj}%   BJ Push: {perc_push_bj}%   Dealer BJ: {perc_d_bj}%")
     print(f"Player Bust: {perc_p_bust}%   Dealer Bust: {perc_d_bust}%")

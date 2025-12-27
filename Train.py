@@ -1,10 +1,12 @@
 import Logic as bj
 import Hardcode as hc
+import Text as txt
 
 import torch
 from torch import nn 
 from torch.utils.data import Dataset, DataLoader, random_split
 
+import time
 import numpy as np
 import pandas as pd
 import tqdm 
@@ -52,12 +54,24 @@ class NeuralNetwork(nn.Module):
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 rank_to_index = {rank: i for i, rank in enumerate(ranks)}
 
-namespace = ['hardcode', 'hc', 'imitation', 'imit']
+namespace = ['hardcode', 'hc', 'imitation', 'imit'] #probably worth getting rid of aliases soon
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 csv_dir = os.path.join(current_dir, 'csvdata')
+model_dir = os.path.join(current_dir, 'models')
+
+def get_models():
+    custom_models = []
+    with os.scandir(model_dir) as files: 
+        for file in files:
+            if file.name.endswith('.pt'):
+                custom_models.append(file.name)
+    
+    return custom_models
+
+namespace.append(get_models())
 
 def onehot_card(card):
     '''This is assuming different input than the other version of this function...so I guess how it ends up working is kind of up in the air still'''
@@ -78,7 +92,10 @@ hsd_result_mapping = {
     'NA' : 3 # do I even need this?
 }
 
-def split_to_csv(player_hand, dealer_hand):
+reverse_split_mapping = {v: k for k, v in split_result_mapping.items()}
+reverse_hsd_mapping = {v: k for k, v in hsd_result_mapping.items()}
+
+def encode_split_hsd(player_hand, dealer_hand, can_double):
     onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     for card in player_hand:
         onehot_p_hand += onehot_card(card)
@@ -103,40 +120,26 @@ def split_to_csv(player_hand, dealer_hand):
     if split_result == 1: 
         hsd_result = 3 #Split makes hsd decision redundant
 
+    return [onehot_p_hand, onehot_d_upcard, can_split, can_double, split_result, hsd_result], raw_split_result, raw_hsd_result
+
+def split_to_csv(player_hand, dealer_hand):
+    # Uncomment the following if we switch to a game-based model vs this round-based model
+    can_double = int(len(player_hand) == 2) # and cash >= 2 * bet
+
+    row, raw_split_result, raw_hsd_result = encode_split_hsd(player_hand, dealer_hand, can_double)
+
     with open(os.path.join(csv_dir, 'training_data.csv'), 'a', newline='') as csv_file:
         split_or_not = csv.writer(csv_file)
-        split_or_not.writerow([onehot_p_hand, onehot_d_upcard, can_split, can_double, split_result, hsd_result])
+        split_or_not.writerow(row)
 
     return raw_split_result
     
 def hsd_to_csv(player_hand, dealer_hand, can_double):
-    onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
-    for card in player_hand:
-        onehot_p_hand += onehot_card(card)
-    
-    onehot_d_upcard = onehot_card(dealer_hand[0])
-
-    can_split = int(bj.can_split(player_hand)) # will this break on hands with multiple splits?
-
-    # Uncomment the following if we switch to a game-based model vs this round-based model
-    can_double = int(len(player_hand) == 2) # and cash >= 2 * bet
-
-    raw_split_result = hc.get_split_choice_hardcode(player_hand, dealer_hand)
-    split_result = split_result_mapping[raw_split_result]
-
-    raw_hsd_result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double)
-    hsd_result = hsd_result_mapping[raw_hsd_result]
-
-    # Overrides
-    if can_split == 0: 
-        split_result = 2 #Split_or_not is not allowed
-    
-    if split_result == 1: 
-        hsd_result = 3 #Split makes hsd decision redundant
+    row, raw_split_result, raw_hsd_result = encode_split_hsd(player_hand, dealer_hand, can_double)
 
     with open(os.path.join(csv_dir, 'training_data.csv'), 'a', newline='') as csv_file:
         split_or_not = csv.writer(csv_file)
-        split_or_not.writerow([onehot_p_hand, onehot_d_upcard, can_split, can_double, split_result, hsd_result])
+        split_or_not.writerow(row)
 
     return raw_hsd_result
 
@@ -162,7 +165,7 @@ def make_training_data(iterations):
     return
 
 def reset_training_data():
-    with open('csvdata/training_data.csv', 'w') as f:
+    with open(os.path.join(csv_dir, 'training_data.csv'), 'w') as f:
         f.write('onehot_p_hand,onehot_d_upcard,can_split,can_double,split_result,hsd_result\n')
 
 def load_data(batch_size):
@@ -178,7 +181,7 @@ def load_data(batch_size):
         def __getitem__(self, idx):
             return self.X[idx], self.y1[idx], self.y2[idx]
         
-    df = pd.read_csv('csvdata/training_data.csv')
+    df = pd.read_csv(os.path.join(csv_dir, 'training_data.csv'))
 
     x1 = torch.tensor(np.vstack(df['onehot_p_hand'].apply(lambda s: np.fromstring(s[1:-1], sep=' '))), dtype=torch.float32)
     x2 = torch.tensor(np.vstack(df['onehot_d_upcard'].apply(lambda s: np.fromstring(s[1:-1], sep=' '))), dtype=torch.float32)
@@ -290,7 +293,7 @@ def train_model():
     print()
 
     # The following prints out the model's structure but isn't really very pretty
-    print("Model Structure: ")
+    print(f"{model_name}'s Structure: ")
     # build structure: list of layers, each layer is a list of neurons (represented here as '.')
     neur_struct = [['.' for _ in range(n_layers)] for _ in range(n_p_layer)]
 
@@ -325,7 +328,7 @@ def train_model():
     print()
 
 
-    print("Choose your training hyperparamters")
+    print("Choose your training hyperparamters: ")
     learning_rate = float(input("Learning Rate: "))
     epochs = int(input("Epochs: "))
     batch_size = int(input("Batch Size: "))
@@ -359,13 +362,23 @@ def train_model():
 
     l1_weight = 1
 
+    print()
+    txt.print_title_box(["BEGIN TRAINING"])
+    print()
+
+    start_time = time.perf_counter()
+
     for t in range(epochs):
         print(f"Epoch {t+1}\n---------------------------")
         train_losses.append(train_loop(train_loader, model, loss_fn, optimizer, batch_size, l1_weight))
         test_acc, test_loss = test_loop(test_loader, model, loss_fn, l1_weight)
         test_accs.append(test_acc)
         test_losses.append(test_loss)
-    print("Training Complete!")
+
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+
+    print(f"\033[3mTraining Completed in {elapsed_time:.4f} seconds!\033[0m")
 
     # Graphing
     plt.plot(test_accs)
@@ -403,30 +416,82 @@ def train_model():
         'model_state_dict': model.state_dict()
     }
 
+    print()
     print("Would you like to save your model? ")
     save_yn = input(">>> ")
     if save_yn == "y": 
-        model_file_location = f"models/{model_name}.pt"
+        model_name += ".pt"
+        model_file_location = os.path.join(model_dir, model_name)
         torch.save(model_params_weights, model_file_location)
+        print("\nModel Saved.")
     # TODO: How do I want to integrate the performance tracker? 
+
+    txt.print_title_box(["EXITING TRAINING MODE"])
+    print()
 
 #train_model()
 
 def load_model(model_name):
     # 1. Load the checkpoint file
-    model_file_location = f'models/{model_name}.pt'
-    checkpoint = torch.load(model_file_location)
+    model_file_location = os.path.join(model_dir, model_name)
+    model_params_weights = torch.load(model_file_location)
 
     # 2. Reconstruct the architecture using the saved config
-    model = NeuralNetwork(**checkpoint['architecture_config'])
+    model = NeuralNetwork(**model_params_weights['architecture_config'])
 
     # 3. Load the weights into that architecture
-    model.load_state_dict(checkpoint['model_state_dict'])
+    model.load_state_dict(model_params_weights['model_state_dict'])
     model.eval()
 
-load_model('my_model')
+    return model
+
+def get_choices_nn(player_hand, dealer_hand, model_name):
+    can_double = int(len(player_hand)==2)
+    row, _, _ = encode_split_hsd(player_hand, dealer_hand, can_double)
+
+    # This is copied and modified slightly from above, making it fairly redundant and probably not as efficient as it could be
+    x1 = torch.tensor(row[0], dtype=torch.float32)
+    x2 = torch.tensor(row[1], dtype=torch.float32)
+    x3 = torch.tensor([row[2]], dtype=torch.float32)
+    x4 = torch.tensor([row[3]], dtype=torch.float32)
+
+    X = torch.cat([x1,x2,x3, x4])
+    X = X.unsqueeze(0)
+
+    model = load_model(model_name)
+    
+    with torch.no_grad():
+        y1, y2 = model(X)
+
+        # # Use softmax to see probabilities if you like
+        # probs_split = torch.softmax(y1, dim=1)
+        # probs_hsd = torch.softmax(y2, dim=1)
+
+        # print(f"Split Probs: {probs_split}")
+        # print(f"HSD Probs: {probs_hsd}")
+
+        split_decision = reverse_split_mapping[torch.argmax(y1).item()]
+        hsd_decision = reverse_hsd_mapping[torch.argmax(y2).item()]
+
+        return split_decision, hsd_decision
+    
+def get_split_choice_nn(player_hand, dealer_hand):
+    model_name = "m1.pt" #This is the hard part
+    split_decision, _ = get_choices_nn(player_hand, dealer_hand, model_name)
+    return split_decision
+
+def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double):
+    model_name = "m1.pt" #This is the hard part
+    _, hsd_decision = get_choices_nn(player_hand, dealer_hand, model_name)
+    return hsd_decision
+
+print(get_choices_nn((("K","H"),("J","S")),(("K","H"),("J","S")), "m1.pt"))
+
+
+#TODO: I need to make it so we can use trained models for inference/the performance tracker
 
 #reset_training_data()
 #make_training_data(100000)
 #load_data()
 
+#get_models()

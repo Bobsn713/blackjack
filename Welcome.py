@@ -39,7 +39,8 @@ def main_loop():
         elif mode_choice in ['cheat', 'c']:
             ch.play_game_cheat()
         elif mode_choice in ['simulate', 's']:
-
+            txt.print_title_box(["ENTERING SIMULATION MODE..."])
+            print('\n')
             while True: 
                 print("Which model would you like to use?")
                 print("('hardcode' or 'imitation')")
@@ -64,7 +65,14 @@ def main_loop():
                     print()
 
             pt.performance_tracker(model,iterations)
+
+            print()
+            print()
+            print('\033[3mSimulation Complete.\033[0m')
+            print('-'*80)
+            print()
         elif mode_choice in ['train', 't']:
+            txt.print_title_box(["ENTERING TRAINING MODE..."])
             tr.train_model()
 
             # message = "Sorry, this functionality isn't quite ready yet."

@@ -37,7 +37,7 @@ def get_card_deal(deck, display_emergency_reshuffle = False, msg = None):
         shuffle_deck(deck)
         display_emergency_reshuffle()
     card = deck.pop()
-    if card_counting:
+    #if card_counting:
         #cards_left[card[0]] -= 1
         #print(cards_left)
     return card

@@ -10,14 +10,21 @@ suits = ['H', 'D', 'C', 'S']
 ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 starting_cash = 1000
 
+card_counting = True
+
 def create_deck(num_decks = 1):
     single_deck = [(rank, suit) for suit in suits for rank in ranks]
+
+    if card_counting: 
+        cards_left = {rank: 4*num_decks for rank in ranks}
+        print(cards_left)
+
     return single_deck * num_decks
 
 def shuffle_deck(deck):
     return random.shuffle(deck)
 
-def get_card_deal(deck, display_emergency_reshuffle, msg = None):
+def get_card_deal(deck, display_emergency_reshuffle = False, msg = None):
 
     if msg == 'phand': 
         card1 = get_card_deal(deck, display_emergency_reshuffle)
@@ -29,7 +36,11 @@ def get_card_deal(deck, display_emergency_reshuffle, msg = None):
         deck.extend(create_deck())
         shuffle_deck(deck)
         display_emergency_reshuffle()
-    return deck.pop()
+    card = deck.pop()
+    if card_counting:
+        #cards_left[card[0]] -= 1
+        #print(cards_left)
+    return card
 
 def card_value(card):
     rank, _ = card
@@ -590,4 +601,6 @@ def run_hardcode_mode(game_or_round):
 
 
 if __name__ == "__main__":
-    run_text_mode()
+    #run_text_mode()
+    deck = create_deck(4)
+    get_card_deal(deck)

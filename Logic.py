@@ -4,42 +4,39 @@ import time
 import pyfiglet
 import Text as txt
 import Hardcode as hc
+from base import GameState, GameInterface
 
 # Generate a deck of cards
 suits = ['H', 'D', 'C', 'S']
 ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 starting_cash = 1000
 
-card_counting = True
-
-def create_deck(num_decks = 1):
+def create_deck(state: GameState):
     single_deck = [(rank, suit) for suit in suits for rank in ranks]
+    state.deck = single_deck * state.num_decks
 
-    if card_counting: 
-        cards_left = {rank: 4*num_decks for rank in ranks}
-        print(cards_left)
+    if state.card_counting: 
+        state.cards_left = {rank: 4*state.num_decks for rank in ranks}
 
-    return single_deck * num_decks
+    random.shuffle(state.deck)
 
-def shuffle_deck(deck):
-    return random.shuffle(deck)
-
-def get_card_deal(deck, display_emergency_reshuffle = False, msg = None):
-
+def get_card_deal(state: GameState, ui: GameInterface, msg = None):
+    # I hate this and want to get rid of it but it has to do with cheat functionality so I will need to edit the function there as well
     if msg == 'phand': 
-        card1 = get_card_deal(deck, display_emergency_reshuffle)
-        card2 = get_card_deal(deck, display_emergency_reshuffle)
+        card1 = get_card_deal(state, ui)
+        card2 = get_card_deal(state, ui)
         return [card1, card2]
     
-    if len(deck) == 0:
+    if len(state.deck) == 0:
         # Emergency reshuffle
-        deck.extend(create_deck())
-        shuffle_deck(deck)
-        display_emergency_reshuffle()
-    card = deck.pop()
-    #if card_counting:
-        #cards_left[card[0]] -= 1
-        #print(cards_left)
+        create_deck(state)
+        ui.display_emergency_reshuffle()
+
+    card = state.deck.pop()
+
+    if state.card_counting:
+        state.cards_left[card[0]] -= 1
+
     return card
 
 def card_value(card):
@@ -74,23 +71,7 @@ def can_split(hand):
     
     return hand[0][0] == hand[1][0] # True if same rank
 
-def play_individual_hand(
-    # Game State
-    cash, 
-    bet, 
-    deck, 
-    hand, 
-    dealer_hand,
-
-    # Display Functions
-    display,
-    display_hand,
-    display_emergency_reshuffle,
-
-    # Get Functions
-    get_hit_stand_dd, 
-    get_card
-):
+def play_individual_hand(state: GameState, ui: GameInterface, hand, bet): 
     """
     Play a single hand and return the result without printing final outcomes.
     Returns a dictionary with hand state and result information.
@@ -99,19 +80,22 @@ def play_individual_hand(
     """
     # Player's Turn
     while True:
-        can_double = len(hand) == 2 and cash >= 2 * bet 
-        h_or_s = get_hit_stand_dd(hand, dealer_hand, can_double)
+        can_double = len(hand) == 2 and state.cash >= 2 * bet 
+        
+        h_or_s = ui.get_hit_stand_dd(hand, state.dealer_hand, can_double)
 
         if h_or_s == "hit":
-            hand.append(get_card(deck, display_emergency_reshuffle, msg = 'hit'))
-            display(f"\nYou Drew: {display_hand([hand[-1]])}")
-            display()
-            display(f"Player Hand: {display_hand(hand)}")
-            display(f"Dealer Hand: {display_hand(dealer_hand, True)}")
-            display()
+            new_card = ui.get_card(state, ui, msg = 'hit')
+            hand.append(new_card)
+
+            ui.display(f"\nYou Drew: {ui.display_hand([hand[-1]])}")
+            ui.display()
+            ui.display(f"Player Hand: {ui.display_hand(hand)}")
+            ui.display(f"Dealer Hand: {ui.display_hand(state.dealer_hand, True)}")
+            ui.display()
 
             if hand_value(hand) > 21:
-                display("Bust!")
+                ui.display("Bust!")
                 return {
                     'hand': hand,
                     'result': 'Player Bust',
@@ -128,12 +112,14 @@ def play_individual_hand(
             }
 
         elif h_or_s == "double down" and can_double:
-            hand.append(get_card(deck, display_emergency_reshuffle, msg = 'dd'))
-            display(f"\nYou doubled down and drew: {display_hand([hand[-1]])}")
-            display(f"Player Hand: {display_hand(hand)}")
+            new_card = ui.get_card(state, ui, msg = 'dd')
+            hand.append(new_card)
+
+            ui.display(f"\nYou doubled down and drew: {ui.display_hand([new_card])}")
+            ui.display(f"Player Hand: {ui.display_hand(hand)}")
 
             if hand_value(hand) > 21:
-                display("Bust!")
+                ui.display("Bust!")
                 return {
                     'hand': hand,
                     'result': 'Player Bust',
@@ -149,35 +135,20 @@ def play_individual_hand(
                 }
 
         else: 
-            display("Invalid Input")
+            ui.display("Invalid Input")
 
 
-def play_round(
-    # Game State
-    cash,
-    deck,
-    sleep,
-
-    # Display Functions
-    display, 
-    display_hand, 
-    display_emergency_reshuffle, 
-    display_final_results,
-
-    # Get Functions
-    get_bet, 
-    get_split_choice, 
-    get_hit_stand_dd, 
-    get_card,
-    ):
-    bet = get_bet(cash)
+def play_round(state: GameState, ui: GameInterface):
+    bet = ui.get_bet(state.cash)
 
     outcomes = [] 
-    initial_hand = get_card(deck, display_emergency_reshuffle, msg = 'phand')
-    dealer_hand = [get_card(deck, display_emergency_reshuffle, msg = 'dhand1'), get_card(deck, display_emergency_reshuffle, msg = 'dhand?')]
 
-    display(f"\nPlayer Hand: {display_hand(initial_hand)}")
-    display(f"Dealer Hand: {display_hand(dealer_hand, hidden=True)}")
+    # Initial deal
+    initial_hand = ui.get_card(state, ui, msg = 'phand')
+    state.dealer_hand = [ui.get_card(state, ui, msg = 'dhand1'), ui.get_card(state, ui, msg = 'dhand?')]
+
+    ui.display(f"\nPlayer Hand: {ui.display_hand(initial_hand)}")
+    ui.display(f"Dealer Hand: {ui.display_hand(state.dealer_hand, hidden=True)}")
 
     # NOTE: THESE BLACKJACK INSTANCES DONT DO THE FULL RESULTS PRINTOUT 
     # because they return early.
@@ -185,67 +156,82 @@ def play_round(
     # but I need to check the logic in the function. 
 
     # Dealer Blackjack Check: Handle the "peek" for cheat mode
-    if dealer_hand[1] == ('?', '?') and card_value(dealer_hand[0]) in [10,11]:
-        display("\nDealer is checking for Blackjack...\n")
-        dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='bjcheck')
+    if state.dealer_hand[1] == ('?', '?') and card_value(state.dealer_hand[0]) in [10,11]:
+        ui.display("\nDealer is checking for Blackjack...\n")
+        state.dealer_hand[1] = ui.get_card(state, ui, msg='bjcheck')
 
     # Check for dealer blackjack first
-    if dealer_hand[1] != ('?', '?') and hand_value(dealer_hand) == 21:
-        if hand_value(initial_hand) == 21:
-            #NOTE: I kind of like the idea of printing blackjack results before the ===FINAL RESULTS=== Section
-            #But to keep things simple I'm commenting all of that out for now. 
-            # display("Push - both have blackjack")
-            # display(f"\nPlayer hand: {display_hand(initial_hand)}")
-            # display(f"Dealer hand: {display_hand(dealer_hand)}")
-
+    if state.dealer_hand[1] != ('?', '?') and hand_value(state.dealer_hand) == 21:
+        if hand_value(initial_hand) == 21: # PUSH: Double blackjack
             round_results = {
                     'cash_changes' : [0],
                     'player_hands' : [initial_hand],
-                    'dealer_hand': dealer_hand, 
+                    'dealer_hand': state.dealer_hand, 
                     'outcomes' : ['Blackjack Push']}
-            
-            display_final_results(round_results)
+            ui.display_final_results(round_results)
             return round_results
-        
-        else:
-            # display("Dealer Blackjack!")
-            # display("Dealer Wins!")
-            # display(f"Dealer hand: {display_hand(dealer_hand)}")
-
+        else: # Dealer only blackjack
             round_results = { 
                     'cash_changes' : [-bet],
                     'player_hands' : [initial_hand],
-                    'dealer_hand': dealer_hand, 
+                    'dealer_hand': state.dealer_hand, 
                     'outcomes' : ['Dealer Blackjack']}
-            
-            display_final_results(round_results)
+            ui.display_final_results(round_results)
             return round_results
 
     # Check for player blackjack
-    if hand_value(initial_hand) == 21:
-        display("\nBlackjack!\n")
-        # display("Player Wins!")
-        # display(f"\nPlayer hand: {display_hand(initial_hand)}")
-        # display(f"Dealer hand: {display_hand(dealer_hand)}")
-
-        if dealer_hand[1] == ('?', '?'):
-            dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg = 'dhand2')
+    if hand_value(initial_hand) == 21: #Player only blackjack
+        ui.display("\nBlackjack!\n")
+        
+        # Prompting for dealer's second card to keep track
+        if state.dealer_hand[1] == ('?', '?'):
+            state.dealer_hand[1] = ui.get_card(state, ui, msg = 'dhand2')
 
         round_results = { 
                 'cash_changes': [int(1.5 * bet)],
                 'player_hands' : [initial_hand],
-                'dealer_hand': dealer_hand, 
+                'dealer_hand': state.dealer_hand, 
                 'outcomes' : ['Player Blackjack']}
-        
-
-        display_final_results(round_results)
+        ui.display_final_results(round_results)
         return round_results
+    
+    MAX_HANDS = 4 # Allow up to 4 hands total (initial + 3 splits)
+
+    # ### SPLIT REFACTOR Possibility
+    # # Split Decision Loop
+    # # Iterate through the hands in initial_hand
+    # 
+
+    # i = 0 
+    # while i < len(initial_hand):
+    #     current_hand = initial_hand[i]
+
+    #     if can_split(current_hand) and len(initial_hand) < MAX_HANDS:
+    #         if ui.get_split_choice == 'y':
+    #             # Create two new hands from this one and return them to state
+    #             split_card_1 = current_hand[0]
+    #             split_card_2 = current_hand[1]
+
+    #             initial_hand[i] = [split_card_1, ui.get_card(state, ui)]
+    #             initial_hand.insert(i + 1, [split_card_2, ui.get_card(state, ui)])
+
+    #             # Stay on index 'i' to check if new hand1 can be split again
+    #             continue
+    #     i += 1
+
+    # # Play phase
+    # hand_results = []
+    # for hand in initial_hand:
+    #     result = play_individual_hand(state, ui, hand, bet)
+    #     hand_results.append(result)
+
+    # ### SPLIT REFACTOR
+
 
     # --- Refactored Split and Hand Preparation Logic ---
     player_hands_for_decision = [(initial_hand, bet)] # Hands waiting for split decision
     final_player_hands = [] # Hands ready for actual play
 
-    MAX_HANDS = 4 # Allow up to 4 hands total (initial + 3 splits)
 
     # Phase 1: Handle all split decisions
     while player_hands_for_decision:
@@ -254,27 +240,27 @@ def play_round(
         # Check if splitting *this* hand would exceed MAX_HANDS
         # A split turns 1 hand into 2, so it adds 1 to the total count.
         if len(final_player_hands) + len(player_hands_for_decision) + 1 > MAX_HANDS: # made redundant by following?
-            display(f"Cannot split {display_hand(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
+            ui.display(f"Cannot split {ui.display_hand(current_hand)}. Maximum number of hands ({MAX_HANDS}) reached.")
             final_player_hands.append((current_hand, current_bet))
             continue # Move to the next hand in the decision queue
 
         # If it's not a pair, or player can't afford, or max hands reached, it's a final hand
-        if not can_split(current_hand) or cash < (len(final_player_hands) + len(player_hands_for_decision) + 1) * bet or len(final_player_hands) + len(player_hands_for_decision) >= MAX_HANDS:
+        if not can_split(current_hand) or state.cash < (len(final_player_hands) + len(player_hands_for_decision) + 1) * bet or len(final_player_hands) + len(player_hands_for_decision) >= MAX_HANDS:
             final_player_hands.append((current_hand, current_bet))
             continue # Move to the next hand in the decision queue
 
         # It's a pair and can be split
-        split_choice = get_split_choice(current_hand, dealer_hand)
+        split_choice = ui.get_split_choice(current_hand, state.dealer_hand)
 
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]
             
-            new_hand1 = [card1, get_card(deck, display_emergency_reshuffle, msg = 'splithand1')]
-            new_hand2 = [card2, get_card(deck, display_emergency_reshuffle, msg = 'splithand2')]
+            new_hand1 = [card1, ui.get_card(state, ui, msg = 'splithand1')]
+            new_hand2 = [card2, ui.get_card(state, ui, msg = 'splithand2')]
             
             # Special handling for split aces (rule: only one card after split)
             if card1[0] == 'A':
-                display("Split aces detected — each hand gets one card only and cannot hit further.")
+                ui.display("Split aces detected — each hand gets one card only and cannot hit further.")
                 # For aces, these hands are immediately considered final for decision making,
                 # as they cannot be split again or hit.
                 final_player_hands.append((new_hand1, current_bet))
@@ -296,12 +282,12 @@ def play_round(
 
         # Print the hand header BEFORE calling play_individual_hand
         if is_split_game:
-            display(f"\n--- Playing Hand {i+1} ---") # More prominent header
-            display(f"Player Hand: {display_hand(hand)}")
-            display(f"Dealer Hand: {display_hand(dealer_hand, hidden=True)}")
+            ui.display(f"\n--- Playing Hand {i+1} ---") # More prominent header
+            ui.display(f"Player Hand: {ui.display_hand(hand)}")
+            ui.display(f"Dealer Hand: {ui.display_hand(state.dealer_hand, hidden=True)}")
 
         if is_split_ace_initial:
-            display("Split Aces: This hand received one card and must stand.")
+            ui.display("Split Aces: This hand received one card and must stand.")
             hand_result = {
                 'hand': hand,
                 'result': 'stand',
@@ -309,7 +295,7 @@ def play_round(
                 'final': False
             }
         elif hand_value(hand) == 21 and is_split_game and len(hand) == 2 and hand[0][0] == 'A': #redundant?
-            display("Split Aces: You got 21 with your second card. You must stand.")
+            ui.display("Split Aces: You got 21 with your second card. You must stand.")
             hand_result = {
                 'hand': hand,
                 'result': 'stand',
@@ -318,23 +304,7 @@ def play_round(
             }
         else:
             #is it getting called?
-            hand_result = play_individual_hand(
-                            # Game State
-                            cash, 
-                            bet, 
-                            deck, 
-                            hand, 
-                            dealer_hand,
-
-                            # Display Functions
-                            display,
-                            display_hand,
-                            display_emergency_reshuffle,
-
-                            # Get Functions
-                            get_hit_stand_dd, 
-                            get_card
-)
+            hand_result = play_individual_hand(state, ui, hand, bet)
             
         hand_results.append(hand_result)
 
@@ -343,30 +313,30 @@ def play_round(
 
     # Play dealer's hand only if needed
     if need_dealer:
-        if sleep == True:
+        if ui.sleep == True:
             time.sleep(1)
 
-        display("\n" + "="*40)
-        display("Dealer's turn:")
-        display("="*40)
+        ui.display("\n" + "="*40)
+        ui.display("Dealer's turn:")
+        ui.display("="*40)
 
         # Resolve dealer's hole card if it's a placeholder
-        if dealer_hand[1] == ('?', '?'): 
-            display()
-            dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='dhand2')
+        if state.dealer_hand[1] == ('?', '?'): 
+            ui.display()
+            state.dealer_hand[1] = ui.get_card(state, ui, msg='dhand2')
 
-        display(f"\nDealer Hand: {display_hand(dealer_hand)}")
-        display("")
+        ui.display(f"\nDealer Hand: {ui.display_hand(state.dealer_hand)}")
+        ui.display("")
         
-        while hand_value(dealer_hand) < 17:
-            dealer_hand.append(get_card(deck, display_emergency_reshuffle, msg = 'dhit'))
-            display(f"Dealer Drew: {display_hand([dealer_hand[-1]])}")
+        while hand_value(state.dealer_hand) < 17:
+            state.dealer_hand.append(ui.get_card(state, ui, msg = 'dhit'))
+            ui.display(f"Dealer Drew: {ui.display_hand([state.dealer_hand[-1]])}")
 
          
 
-        dealer_total = hand_value(dealer_hand)
+        dealer_total = hand_value(state.dealer_hand)
         if dealer_total > 21:
-            display("Dealer Busts!")
+            ui.display("Dealer Busts!")
             
             # for hand_result in hand_results:
             #     if result['final']:
@@ -377,10 +347,10 @@ def play_round(
             round_results = { # I have to change this because its returning too early and not printing final results
                     'cash_changes': [bet], #is this bad because it can't handle split hands? 
                     'player_hands' : [d['hand'] for d in hand_results],
-                    'dealer_hand': dealer_hand, 
+                    'dealer_hand': state.dealer_hand, 
                     'outcomes' : outcomes}
     
-    if sleep == True:
+    if ui.sleep == True:
         time.sleep(3)
 
     cash_changes = []
@@ -412,195 +382,122 @@ def play_round(
     round_results = { 
             'cash_changes': [int(cash_change) for cash_change in cash_changes], #list
             'player_hands' : [d['hand'] for d in hand_results], #list
-            'dealer_hand': dealer_hand, 
+            'dealer_hand': state.dealer_hand, 
             'outcomes' : outcomes #list
             }
     
     # Resolve dealer's hole card if it's a placeholder
-    if dealer_hand[1] == ('?', '?'): 
-        display()
-        dealer_hand[1] = get_card(deck, display_emergency_reshuffle, msg='dhand2')
+    if state.dealer_hand[1] == ('?', '?'): 
+        ui.display()
+        state.dealer_hand[1] = ui.get_card(state, ui, msg='dhand2')
 
-    display_final_results(round_results)
+    ui.display_final_results(round_results)
     return round_results
 
 
-def play_game(
-    # Game State
-    sleep                        = True,
-
-    # Display Functions
-    display                      = print,
-    display_hand                 = txt.display_hand_print,
-    display_emergency_reshuffle  = txt.display_emergency_reshuffle_print,
-    display_final_results        = txt.display_final_results_print,
-
-    # Get Functions
-    get_another_round            = txt.get_another_round_print,
-    get_bet                      = txt.get_bet_print,
-    get_split_choice             = txt.get_split_choice_print,
-    get_hit_stand_dd             = txt.get_hit_stand_dd_print,
-    get_card                     = get_card_deal,
-):
+def play_game(state: GameState, ui: GameInterface):
     txt.print_title_box(["STARTING NEW GAME..."])
-    display()
-    cash = starting_cash
-    deck = create_deck()
-    shuffle_deck(deck)
+    ui.display()
+    state.cash = starting_cash
+    create_deck(state)
 
-    deck_len = len(deck)
-    reshuffle_point = int(deck_len / 4)
+    deck_len = len(state.deck)
 
-    # ### SPECIAL TESTING CODE
+    # TODO: Is this how actual blackjack games work? 
+    reshuffle_size = int(deck_len / 4)
+
+    ###TESTING CODE
+    #
     # cards_to_add = list(reversed([
-    #     ('8', 'H'), ('8', 'D'),   # Player initial hand (8,8)
-    #     ('10', 'C'), ('10', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
+    #     ('8', 'H'), ('10', 'D'),   # Player initial hand (8,8)
+    #     ('7', 'C'), ('10', 'S'),   # Cards dealt to first and second hands (or to dealer if no split)
     #     ('10', 'H'), ('10', 'D'),   # Further split hands
     #     ('10', 'H'), ('7', 'D')   # Dealer cards
     # ]))
-
-    # deck.extend(cards_to_add)
-    # ###SPECIAL TESTING CODE ^^^^^^^
-
-    #Just for formatting
-    #display("\n") #Do I need this?
+    
+    # state.deck.extend(cards_to_add)
+    # #
+    # ###TESTING CODE
 
     round_num = 0
-    while cash > 0:
+    while state.cash > 0:
         round_num += 1
         message = f"Round {round_num}"
         buffer = int((80 - len(message))/2)
-        display('-'*80) if round_num != 1 else None
-        display(" " * buffer, message, " " * buffer)
-        display('-'*80)
+        ui.display('-'*80) if round_num != 1 else None
+        ui.display(" " * buffer, message, " " * buffer)
+        ui.display('-'*80)
 
-        result_dict = play_round(
-                        # Game State
-                        cash,
-                        deck,
-                        sleep,
+        result_dict = play_round(state, ui)
 
-                        # Display Functions
-                        display, 
-                        display_hand, 
-                        display_emergency_reshuffle, 
-                        display_final_results,
+        state.cash = state.cash + sum(result_dict['cash_changes'])
 
-                        # Get Functions
-                        get_bet, 
-                        get_split_choice, 
-                        get_hit_stand_dd, 
-                        get_card
-                    )
+        if len(state.deck) < reshuffle_size: 
+            ui.display(f"\nReshuffling... (with {len(state.deck)} cards left)\n")
+            create_deck(state)
 
-        cash = cash + sum(result_dict['cash_changes'])
-
-        if len(deck) < reshuffle_point: 
-            display(f"\nReshuffling... ({len(deck)} cards left)\n")
-            deck = create_deck()
-            shuffle_deck(deck)
-
-        display(f"Cash: ${cash}")
-        if cash <= 0:
+        ui.display(f"Cash: ${state.cash}")
+        if state.cash <= 0:
             txt.print_title_box(["GAME OVER", "~ OUT OF MONEY! ~"])
-            display()
+            ui.display()
             break
-        again = get_another_round()
-        #display("-" * 80)
+        again = ui.get_another_round()
         if again != 'y':
-            txt.print_title_box(["GAME OVER", f"~ FINAL CASH: ${cash} ~"])
-            display()
-            display("\033[3mThanks for Playing!\033[0m\n") #These are italics
+            txt.print_title_box(["GAME OVER", f"~ FINAL CASH: ${state.cash} ~"])
+            ui.display()
+            ui.display("\033[3mThanks for Playing!\033[0m\n") # These are italics
             break
 
 
 def run_text_mode():
-    play_game(
-        # Game State
-        sleep                       = True,
+    play_game(state, text_mode)
 
-        # Display Functions
+def run_hardcode_mode(game_or_round):
+    if game_or_round == 'game':
+        play_game(state, hardcode_mode)
+    elif game_or_round == 'round':
+        play_round(state, hardcode_mode)
+    else: 
+        raise ValueError("Pass either 'game' or 'round as arguments to 'run_hardcode_mode()'")
+
+
+if __name__ == "__main__":
+    # These are defined in config.py and only useful here for testing/to avoid circular imports
+    state = GameState()
+    text_mode = GameInterface(
+        # Display functions
         display                     = print, 
         display_hand                = txt.display_hand_print,
         display_emergency_reshuffle = txt.display_emergency_reshuffle_print,
         display_final_results       = txt.display_final_results_print,
 
         # Get Functions
-        get_another_round           = txt.get_another_round_print,
         get_bet                     = txt.get_bet_print,
+        get_card                    = get_card_deal,
         get_split_choice            = txt.get_split_choice_print,
-        get_hit_stand_dd            = txt.get_hit_stand_dd_print, 
-        get_card                    = get_card_deal
-    )
+        get_hit_stand_dd            = txt.get_hit_stand_dd_print,
+        get_another_round           = txt.get_another_round_print,
 
-def run_hardcode_mode(game_or_round):
-    #I may want to add the option to play rounds and skip over the game functionality so I can
-    #iterate a large number of rounds without risking running out of cash
+        # Other
+        sleep = True)
+    
+    hardcode_mode = GameInterface(
+        # Display functions
+        display                     = print,
+        display_hand                = txt.display_hand_print, # or hc.display_hand_hardcode
+        display_emergency_reshuffle = txt.display_emergency_reshuffle_print, # or hc.emergency_reshuffle_hardcode
+        display_final_results       = txt.display_final_results_print,
 
-    #I think the strategy would be to pull all these arguments out and make them variable definitions, 
-    # and then have a play game and play round function
+        # Get Functions
+        get_bet                     = hc.get_bet_hardcode,
+        get_card                    = get_card_deal,
+        get_split_choice            = hc.get_split_choice_hardcode,
+        get_hit_stand_dd            = hc.get_hit_stand_dd_hardcode,
+        get_another_round           = hc.get_another_round_hardcode,
 
-    # Game State
-    sleep                       = False
-
-    # Display Functions
-    display                     = print
-    display_hand                = txt.display_hand_print # or hc.display_hand_hardcode
-    display_emergency_reshuffle = txt.display_emergency_reshuffle_print # or hc.emergency_reshuffle_hardcode
-    display_final_results       = txt.display_final_results_print
-
-    # Get Functions
-    get_another_round           = hc.get_another_round_hardcode
-    get_bet                     = hc.get_bet_hardcode
-    get_split_choice            = hc.get_split_choice_hardcode
-    get_hit_stand_dd            = hc.get_hit_stand_dd_hardcode
-    get_card                    = get_card_deal
-
-    if game_or_round == 'game':
-        play_game(
-            # Game State
-            sleep, 
-
-            # Display Functions
-            display, 
-            display_hand,
-            display_emergency_reshuffle, 
-            display_final_results,
-
-            # Get Functions
-            get_another_round,
-            get_bet,
-            get_split_choice,
-            get_hit_stand_dd,
-            get_card                      
-        )
-    elif game_or_round == 'round':
-        deck = create_deck()
-        shuffle_deck(deck)
-
-        play_round(
-            # Game State
-            1000, #infinite cash relative to bet size
-            deck,
-            sleep,
-
-            # Display Functions
-            display, 
-            display_hand, 
-            display_emergency_reshuffle, 
-            display_final_results,
-
-            # Get Functions
-            lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
-            get_split_choice, 
-            get_hit_stand_dd, 
-            get_card
-        )
-    else: 
-        raise ValueError("Pass either 'game' or 'round as arguments to 'run_hardcode_mode()'")
-
-
-if __name__ == "__main__":
-    #run_text_mode()
-    deck = create_deck(4)
-    get_card_deal(deck)
+        # Other
+        sleep = False)
+    
+    run_text_mode()
+    #run_hardcode_mode('game')
+    

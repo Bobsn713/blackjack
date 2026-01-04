@@ -1,6 +1,25 @@
+### MESSGES REFACTOR IDEA
+
+# In Logic.py, instead of: 
+# ui.display("Dealer is checking for Blackjack...") 
+
+# do something like: 
+# ui.notify("dealer_checking_bj")
+
+# with the following in Text.py
+# MESSAGES = {
+#     "dealer_checking_bj": "\nDealer is checking for Blackjack...\n",
+#     "bust": "Bust! Better luck next time.",
+# }
+
+# def notify(key):
+#     print(MESSAGES.get(key, "Unknown Event"))
+
+
 ### HELPER FUNCTIONS
 
 #This is just a copy from Logic and shouldn't really be here but it is for now so I don't do circular imports
+# Best solutions are either to make them objects with value methods or put them in some kind of small util file instead of having them in two places. 
 def card_value(card):
     rank, _ = card
     if rank in ['J', 'Q', 'K']:

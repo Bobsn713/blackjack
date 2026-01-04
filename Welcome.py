@@ -6,6 +6,8 @@ import Text as txt
 import Performance_Tracker as pt
 import Cheat as ch
 import Train as tr
+from config import text_mode, hardcode_mode, cheat_mode
+from base import GameState
 
 def clear():
         print("\n" * 30)
@@ -35,12 +37,15 @@ def main_loop():
             print("Type 'train'  or 't' to train a neural network to play blackjack.")
             print("Type 'quit' or 'q' to leave the program")
         elif mode_choice in ['play', 'p']:
-            bj.play_game()
+            state = GameState()
+            bj.play_game(state, text_mode)
         elif mode_choice in ['cheat', 'c']:
-            ch.play_game_cheat()
+            state = GameState()
+            bj.play_game(state, cheat_mode)
         elif mode_choice in ['simulate', 's']:
             txt.print_title_box(["ENTERING SIMULATION MODE..."])
             print('\n')
+            # TODO: should this logic be somewhere else? 
             while True: 
                 print("Which model would you like to use?")
                 print("Defaults: hardcode, imitation")
@@ -83,13 +88,6 @@ def main_loop():
         elif mode_choice in ['train', 't']:
             txt.print_title_box(["ENTERING TRAINING MODE..."])
             tr.train_model()
-
-            # message = "Sorry, this functionality isn't quite ready yet."
-            # len_mes = len(message)
-            # buffer = int((80 - len(message))/2)
-            # print("#"*80)
-            # print(" " * buffer, message, " " * buffer)
-            # print("#"*80)
         elif mode_choice in ['quit', 'q']:
             keep_playing = False
         else: 

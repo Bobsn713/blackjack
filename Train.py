@@ -12,6 +12,8 @@ import pandas as pd
 import tqdm 
 import matplotlib.pyplot as plt
 
+from base import GameState, GameInterface
+
 import os
 import sys
 import csv
@@ -95,7 +97,7 @@ hsd_result_mapping = {
 reverse_split_mapping = {v: k for k, v in split_result_mapping.items()}
 reverse_hsd_mapping = {v: k for k, v in hsd_result_mapping.items()}
 
-def encode_split_hsd(player_hand, dealer_hand, can_double):
+def encode_split_hsd(player_hand, dealer_hand, can_double, ui):
     onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     for card in player_hand:
         onehot_p_hand += onehot_card(card)
@@ -107,10 +109,10 @@ def encode_split_hsd(player_hand, dealer_hand, can_double):
     # Uncomment the following if we switch to a game-based model vs this round-based model
     can_double = int(len(player_hand) == 2) # and cash >= 2 * bet
 
-    raw_split_result = hc.get_split_choice_hardcode(player_hand, dealer_hand)
+    raw_split_result = hc.get_split_choice_hardcode(player_hand, dealer_hand, ui)
     split_result = split_result_mapping[raw_split_result]
 
-    raw_hsd_result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double)
+    raw_hsd_result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double, ui)
     hsd_result = hsd_result_mapping[raw_hsd_result]
 
     # Overrides
@@ -122,11 +124,11 @@ def encode_split_hsd(player_hand, dealer_hand, can_double):
 
     return [onehot_p_hand, onehot_d_upcard, can_split, can_double, split_result, hsd_result], raw_split_result, raw_hsd_result
 
-def split_to_csv(player_hand, dealer_hand):
+def split_to_csv(player_hand, dealer_hand, ui):
     # Uncomment the following if we switch to a game-based model vs this round-based model
     can_double = int(len(player_hand) == 2) # and cash >= 2 * bet
 
-    row, raw_split_result, raw_hsd_result = encode_split_hsd(player_hand, dealer_hand, can_double)
+    row, raw_split_result, raw_hsd_result = encode_split_hsd(player_hand, dealer_hand, can_double, ui)
 
     with open(os.path.join(csv_dir, 'training_data.csv'), 'a', newline='') as csv_file:
         split_or_not = csv.writer(csv_file)
@@ -135,7 +137,7 @@ def split_to_csv(player_hand, dealer_hand):
     return raw_split_result
     
 def hsd_to_csv(player_hand, dealer_hand, can_double):
-    row, raw_split_result, raw_hsd_result = encode_split_hsd(player_hand, dealer_hand, can_double)
+    row, raw_split_result, raw_hsd_result = encode_split_hsd(player_hand, dealer_hand, can_double, ui)
 
     with open(os.path.join(csv_dir, 'training_data.csv'), 'a', newline='') as csv_file:
         split_or_not = csv.writer(csv_file)
@@ -446,9 +448,9 @@ def load_model(model_name):
 
     return model
 
-def get_choices_nn(player_hand, dealer_hand, loaded_model):
+def get_choices_nn(player_hand, dealer_hand, loaded_model, ui):
     can_double = int(len(player_hand)==2)
-    row, _, _ = encode_split_hsd(player_hand, dealer_hand, can_double)
+    row, _, _ = encode_split_hsd(player_hand, dealer_hand, can_double, ui)
 
     # This is copied and modified slightly from above, making it fairly redundant and probably not as efficient as it could be
     x1 = torch.tensor(row[0], dtype=torch.float32)
@@ -474,19 +476,20 @@ def get_choices_nn(player_hand, dealer_hand, loaded_model):
 
         return split_decision, hsd_decision
     
-def get_split_choice_nn(player_hand, dealer_hand, loaded_model):
-    split_decision, _ = get_choices_nn(player_hand, dealer_hand, loaded_model)
+def get_split_choice_nn(player_hand, dealer_hand, loaded_model, ui):
+    split_decision, _ = get_choices_nn(player_hand, dealer_hand, loaded_model, ui)
     return split_decision
 
-def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double, loaded_model):
-    _, hsd_decision = get_choices_nn(player_hand, dealer_hand, loaded_model)
+def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double, loaded_model, ui):
+    _, hsd_decision = get_choices_nn(player_hand, dealer_hand, loaded_model, ui)
     return hsd_decision
 
 
 #TODO: I need to make it so we can use trained models for inference/the performance tracker
 
 if __name__ == '__main__':
-    print(get_choices_nn((("K","H"),("J","S")),(("K","H"),("J","S")), load_model("m1.pt")))
+    ui = GameInterface()
+    print(get_choices_nn((("K","H"),("J","S")),(("K","H"),("J","S")), load_model("m1.pt")), ui)
     #reset_training_data()
     #make_training_data(100000)
     #load_data()

@@ -33,9 +33,7 @@ def get_card_deal(state: GameState, ui: GameInterface, msg = None):
         ui.display_emergency_reshuffle()
 
     card = state.deck.pop()
-
-    if state.card_counting:
-        state.cards_left[card[0]] -= 1
+    state.cards_left[card[0]] -= 1
 
     return card
 
@@ -82,7 +80,7 @@ def play_individual_hand(state: GameState, ui: GameInterface, hand, bet):
     while True:
         can_double = len(hand) == 2 and state.cash >= 2 * bet 
         
-        h_or_s = ui.get_hit_stand_dd(hand, state.dealer_hand, can_double)
+        h_or_s = ui.get_hit_stand_dd(hand, state.dealer_hand, can_double, ui)
 
         if h_or_s == "hit":
             new_card = ui.get_card(state, ui, msg = 'hit')
@@ -197,37 +195,6 @@ def play_round(state: GameState, ui: GameInterface):
     
     MAX_HANDS = 4 # Allow up to 4 hands total (initial + 3 splits)
 
-    # ### SPLIT REFACTOR Possibility
-    # # Split Decision Loop
-    # # Iterate through the hands in initial_hand
-    # 
-
-    # i = 0 
-    # while i < len(initial_hand):
-    #     current_hand = initial_hand[i]
-
-    #     if can_split(current_hand) and len(initial_hand) < MAX_HANDS:
-    #         if ui.get_split_choice == 'y':
-    #             # Create two new hands from this one and return them to state
-    #             split_card_1 = current_hand[0]
-    #             split_card_2 = current_hand[1]
-
-    #             initial_hand[i] = [split_card_1, ui.get_card(state, ui)]
-    #             initial_hand.insert(i + 1, [split_card_2, ui.get_card(state, ui)])
-
-    #             # Stay on index 'i' to check if new hand1 can be split again
-    #             continue
-    #     i += 1
-
-    # # Play phase
-    # hand_results = []
-    # for hand in initial_hand:
-    #     result = play_individual_hand(state, ui, hand, bet)
-    #     hand_results.append(result)
-
-    # ### SPLIT REFACTOR
-
-
     # --- Refactored Split and Hand Preparation Logic ---
     player_hands_for_decision = [(initial_hand, bet)] # Hands waiting for split decision
     final_player_hands = [] # Hands ready for actual play
@@ -250,7 +217,7 @@ def play_round(state: GameState, ui: GameInterface):
             continue # Move to the next hand in the decision queue
 
         # It's a pair and can be split
-        split_choice = ui.get_split_choice(current_hand, state.dealer_hand)
+        split_choice = ui.get_split_choice(current_hand, state.dealer_hand, ui)
 
         if split_choice == 'y':
             card1, card2 = current_hand[0], current_hand[1]
@@ -313,8 +280,7 @@ def play_round(state: GameState, ui: GameInterface):
 
     # Play dealer's hand only if needed
     if need_dealer:
-        if ui.sleep == True:
-            time.sleep(1)
+        ui.wait(1)
 
         ui.display("\n" + "="*40)
         ui.display("Dealer's turn:")
@@ -350,8 +316,7 @@ def play_round(state: GameState, ui: GameInterface):
                     'dealer_hand': state.dealer_hand, 
                     'outcomes' : outcomes}
     
-    if ui.sleep == True:
-        time.sleep(3)
+    ui.wait(3)
 
     cash_changes = []
 

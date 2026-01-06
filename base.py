@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Callable, List, Tuple
+import time
 
 @dataclass
 class GameState: 
@@ -31,3 +32,7 @@ class GameInterface:
     get_another_round: Callable = None
 
     sleep: bool = True
+
+    def wait(self, seconds: float):
+        if self.sleep:
+            time.sleep(seconds)

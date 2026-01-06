@@ -119,11 +119,11 @@ def get_bet_print(cash, input = input, print = print):
         except ValueError:
             print("\nPlease enter a valid (whole) number.\n")
 
-def get_split_choice_print(hand, dealer_hand): #dealer hand is just in there because the hardcode version of the file needs it
+def get_split_choice_print(hand, dealer_hand, ui): #dealer hand is just in there because the hardcode version of the file needs it
     print(f"\nCurrently considering: {display_hand_print(hand)}")
     return input("Do you want to split this hand? (y/n) ").lower()
 
-def get_hit_stand_dd_print(hand, dealer_hand, can_double): #dealer hand is in hardcode so that's why its here
+def get_hit_stand_dd_print(hand, dealer_hand, can_double, ui): #dealer hand is in hardcode so that's why its here
     if can_double:
         prompt = "\nDo you want to hit, stand, or double down? "
     else:

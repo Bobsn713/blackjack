@@ -4,6 +4,7 @@ import Text as txt
 import matplotlib.pyplot as plt
 import Imitation as imit
 import Train as tr
+from base import GameState, GameInterface
 
 import tqdm 
 import time
@@ -16,7 +17,6 @@ from scipy.stats import t
 
 def performance_tracker(model, iterations = 10000):
     model = model.lower()
-    cash = 1000 # big enough that bets sized 1 will never bring it to 0
 
     #Cash Tracking Lists
     round_cash_changes = []
@@ -41,35 +41,42 @@ def performance_tracker(model, iterations = 10000):
         get_hit_stand_dd = hc.get_hit_stand_dd_hardcode
     elif model in tr.get_models(): # update this
         loaded_model = tr.load_model(model)
-        get_split_choice = lambda p_hand, d_hand: tr.get_split_choice_nn(p_hand, d_hand, loaded_model)
-        get_hit_stand_dd = lambda p_hand, d_hand, can_double: tr.get_hit_stand_dd_nn(p_hand, d_hand, can_double, loaded_model)
+        get_split_choice = lambda p_hand, d_hand, ui: tr.get_split_choice_nn(p_hand, d_hand, loaded_model, ui)
+        get_hit_stand_dd = lambda p_hand, d_hand, can_double, ui: tr.get_hit_stand_dd_nn(p_hand, d_hand, can_double, loaded_model, ui)
     else: 
         raise ValueError("Pass 'imitation', 'hardcode', or a custom '.pt' file to 'run_hardcode_mode()'")
 
+
+    state = GameState(cash = iterations)
+    simulation_mode = GameInterface(
+        # Display functions
+        display                     = hc.display_nothing_hardcode,
+        display_hand                = hc.display_nothing_hardcode,
+        display_emergency_reshuffle = hc.display_nothing_hardcode,
+        display_final_results       = hc.display_nothing_hardcode,
+
+        # Get Functions
+        get_bet                      = lambda cash: state.bet,
+        get_card                     = bj.get_card_deal,
+        get_split_choice             = get_split_choice,
+        get_hit_stand_dd             = get_hit_stand_dd,
+        get_another_round            = lambda: 'y',
+
+        # Other
+        sleep = False
+    )
+
     start_time = time.perf_counter()
 
-    for i in tqdm.tqdm(range(iterations)):     
-        deck = bj.create_deck()
-        bj.shuffle_deck(deck)
+    for i in tqdm.tqdm(range(iterations)):  
+        deck_len = len(state.deck)
+        reshuffle_size = int(deck_len / 4) 
+        if len(state.deck) < reshuffle_size:
+            bj.create_deck(state)
 
-        return_dict = bj.play_round(
-            # Game State
-            cash,
-            deck,
-            sleep = False,
-
-            # Display Functions
-            display = hc.display_nothing_hardcode, 
-            display_hand = hc.display_nothing_hardcode, # I think as long as the display function is empty this shouldn't print
-            display_emergency_reshuffle = hc.display_nothing_hardcode, #Ditto
-            display_final_results = hc.display_nothing_hardcode,
-
-            # Get Functions
-            get_bet = lambda cash: 1, 
-            get_split_choice = get_split_choice,
-            get_hit_stand_dd = get_hit_stand_dd, 
-            get_card         = bj.get_card_deal
-        )
+        # Could update bet dynamically by editing state.bet
+        
+        return_dict = bj.play_round(state, simulation_mode)
 
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time

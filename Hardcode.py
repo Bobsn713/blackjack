@@ -78,7 +78,7 @@ def get_another_round_hardcode():
 def get_bet_hardcode(cash):
     return 100 #Automatically set the bet amount to 100
 
-def get_split_choice_hardcode(player_hand, dealer_hand): 
+def get_split_choice_hardcode(player_hand, dealer_hand, ui): 
     card = player_hand[0][0] #Either hand would do
     dealer_upcard_value = bj.card_value(dealer_hand[0]) #Is it confusing that this is the only place we do value instead of dealer upcard as a string? 
 
@@ -96,7 +96,7 @@ def get_split_choice_hardcode(player_hand, dealer_hand):
     else: 
         return "n"
     
-def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double):
+def get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double, ui):
     is_soft, soft_total = is_soft_total(player_hand)
 
     if is_soft:

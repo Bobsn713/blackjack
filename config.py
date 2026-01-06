@@ -1,3 +1,5 @@
+# Since I can't fit all my configs in here, I probably will delete it and put everything in its own parent file
+
 import Logic as bj
 import Text as txt
 import Hardcode as hc

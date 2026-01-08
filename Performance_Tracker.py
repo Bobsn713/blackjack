@@ -33,10 +33,7 @@ def performance_tracker(model, iterations = 10000):
     #Running Total
     running_cash_total = []
 
-    if model in ['imit', 'imitation']:
-        get_split_choice = imit.get_split_choice_imit
-        get_hit_stand_dd = imit.get_hit_stand_dd_imit
-    elif model in ['hc', 'hardcode']:
+    if model == 'basic_strategy':
         get_split_choice = hc.get_split_choice_hardcode
         get_hit_stand_dd = hc.get_hit_stand_dd_hardcode
     elif model in tr.get_models(): # update this
@@ -44,7 +41,7 @@ def performance_tracker(model, iterations = 10000):
         get_split_choice = lambda p_hand, d_hand, ui: tr.get_split_choice_nn(p_hand, d_hand, loaded_model, ui)
         get_hit_stand_dd = lambda p_hand, d_hand, can_double, ui: tr.get_hit_stand_dd_nn(p_hand, d_hand, can_double, loaded_model, ui)
     else: 
-        raise ValueError("Pass 'imitation', 'hardcode', or a custom '.pt' file to 'run_hardcode_mode()'")
+        raise ValueError("Pass 'basic_strategy', 'sample_neural_net', or a custom '.pt' file to 'run_hardcode_mode()'")
 
 
     state = GameState(cash = iterations)
@@ -189,6 +186,53 @@ def performance_tracker(model, iterations = 10000):
 
     plt.plot(running_cash_total)
     plt.show()
+
+def choose_model():
+    while True: 
+        print()
+        print("Which model would you like to use?")
+        print("Defaults: basic_strategy, sample_neural_net")
+        custom_models = tr.get_models()
+        custom_models.remove('sample_neural_net.pt')
+        display_names = [name.split('.')[0] for name in custom_models]
+        names_string = ", ".join(display_names)
+        
+        if custom_models:
+            print(f"Custom Models: {names_string}")
+        else: 
+            print("No custom models yet...")
+        
+        model = input(">>> ").lower() 
+        print()
+
+        if model == "basic_strategy":
+            break
+        elif model in custom_models:
+            break
+        elif model in display_names or model == 'sample_neural_net':
+            model = f"{model}.pt"
+            break
+        else: 
+            print("Please enter one of the options listed.")
+
+    while True: 
+        print("How many hands would you like to simulate?")
+        try: 
+            iterations = int(input(">>> "))
+            print()
+            break
+        except: 
+            print()
+            print("Please enter an integer.")
+            print()
+
+    performance_tracker(model,iterations)
+
+    print()
+    print()
+    print('\033[3mSimulation Complete.\033[0m')
+    print('-'*80)
+    print()
 
 if __name__ == "__main__":
     performance_tracker('hardcode', iterations = 100000)

@@ -44,47 +44,7 @@ def main_loop():
             bj.play_game(state, cheat_mode)
         elif mode_choice in ['simulate', 's']:
             txt.print_title_box(["ENTERING SIMULATION MODE..."])
-            print('\n')
-            # TODO: should this logic be somewhere else? 
-            while True: 
-                print("Which model would you like to use?")
-                print("Defaults: hardcode, imitation")
-                custom_models = tr.get_models()
-                display_names = [name.split('.')[0] for name in custom_models]
-                names_string = ", ".join(display_names)
-                print(f"Custom Models: {names_string}")
-                model = input(">>> ").lower() 
-                print()
-
-                if model in ['imit', 'imitation', 'hc', 'hardcode']:
-                    break
-                elif model in custom_models:
-                    break
-                elif model in display_names:
-                    model = f"{model}.pt"
-                    break
-                else: 
-                    print("Please enter one of the options listed.")
-                    print()
-
-            while True: 
-                print("How many hands would you like to simulate?")
-                try: 
-                    iterations = int(input(">>> "))
-                    print()
-                    break
-                except: 
-                    print()
-                    print("Please enter an integer.")
-                    print()
-
-            pt.performance_tracker(model,iterations)
-
-            print()
-            print()
-            print('\033[3mSimulation Complete.\033[0m')
-            print('-'*80)
-            print()
+            pt.choose_model()
         elif mode_choice in ['train', 't']:
             txt.print_title_box(["ENTERING TRAINING MODE..."])
             tr.train_model()

@@ -1,6 +1,6 @@
 import game_logic as bj
 import basic_strategy as hc
-import text as txt
+import text1 as txt
 import matplotlib.pyplot as plt
 import train_nn as tr
 from base import GameState, GameInterface

@@ -1,6 +1,6 @@
 import game_logic as bj
 import basic_strategy as hc
-import text as txt
+import text1 as txt
 
 import torch
 from torch import nn 

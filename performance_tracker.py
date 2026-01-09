@@ -192,11 +192,11 @@ def choose_model():
         print("Which model would you like to use?")
         print("Defaults: basic_strategy, sample_neural_net")
         custom_models = tr.get_models()
-        custom_models.remove('sample_neural_net.pt')
         display_names = [name.split('.')[0] for name in custom_models]
+        display_names.remove('sample_neural_net')
         names_string = ", ".join(display_names)
         
-        if custom_models:
+        if display_names:
             print(f"Custom Models: {names_string}")
         else: 
             print("No custom models yet...")

@@ -56,7 +56,7 @@ class NeuralNetwork(nn.Module):
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 rank_to_index = {rank: i for i, rank in enumerate(ranks)}
 
-namespace = ['basic_strategy', 'sample_neural_net'] #probably worth getting rid of aliases soon
+namespace = ['basic_strategy', 'sample_neural_net']
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -68,14 +68,15 @@ def get_models():
     custom_models = []
     with os.scandir(model_dir) as files: 
         for file in files:
-            if file.name == "sample_neural_net.pt":
-                continue
             if file.name.endswith('.pt'):
-                custom_models.append(file.name[:-3])
+                custom_models.append(file.name)
     
     return custom_models
 
-namespace += get_models()
+
+for model_name in get_models():
+    clean_name = model_name[:-3]
+    namespace.append(clean_name)
 
 def onehot_card(card):
     '''This is assuming different input than the other version of this function...so I guess how it ends up working is kind of up in the air still'''

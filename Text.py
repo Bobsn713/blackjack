@@ -131,16 +131,3 @@ def get_hit_stand_dd_print(hand, dealer_hand, can_double, ui): #dealer hand is i
     h_or_s = input(prompt).lower()
 
     return h_or_s
-
-
-
-
-# #Testing
-# test_dict = {
-# 'cash_changes': [150], 
-# 'player_hands': [[('A', 'H'), ('10', 'H')]], 
-# 'dealer_hand': [('8', 'C'), ('8', 'S')], 
-# 'outcomes': ['Player Blackjack']
-# }
-
-# display_final_results_print(test_dict)

@@ -1,7 +1,5 @@
 # Import libraries
 import random
-import time 
-import pyfiglet
 import text as txt
 import basic_strategy as hc
 from base import GameState, GameInterface
@@ -134,7 +132,7 @@ def play_individual_hand(state: GameState, ui: GameInterface, hand, bet):
 
         else: 
             ui.display("Invalid Input")
-
+            
 
 def play_round(state: GameState, ui: GameInterface):
     bet = ui.get_bet(state.cash)

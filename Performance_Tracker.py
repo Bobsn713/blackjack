@@ -234,4 +234,4 @@ def choose_model():
     print()
 
 if __name__ == "__main__":
-    performance_tracker('hardcode', iterations = 100000)
+    performance_tracker('basic_strategy', iterations = 100000)

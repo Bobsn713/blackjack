@@ -489,9 +489,3 @@ def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double, loaded_model, ui):
 
 if __name__ == '__main__':
     ui = GameInterface()
-    print(get_choices_nn((("K","H"),("J","S")),(("K","H"),("J","S")), load_model("m1.pt")), ui)
-    #reset_training_data()
-    #make_training_data(100000)
-    #load_data()
-
-    #get_models()

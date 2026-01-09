@@ -34,7 +34,6 @@ def find_and_remove_card(state: GameState, rank, suit):
     else: 
         raise ValueError(f"No more {rank}'s left in the deck!")
 
-
 def get_hand_cheat(): 
     run_again = True
     while run_again:
@@ -144,42 +143,6 @@ def get_card_cheat(state: GameState, ui: GameInterface, msg):
     rank, suit = clean_card
     card = find_and_remove_card(state, rank, suit)
     return card
-
-def play_round_cheat():
-    deck = bj.create_deck()
-    bj.shuffle_deck(deck)
-
-    bj.play_round(
-        cash = 1000, 
-        deck = deck,
-        sleep = True, 
-        
-        display = print, 
-        display_hand = txt.display_hand_print, 
-        display_emergency_reshuffle = txt.display_emergency_reshuffle_print,
-        display_final_results       = txt.display_final_results_print, 
-
-        get_bet                     = txt.get_bet_print,
-        get_split_choice            = get_split_choice_cheat,
-        get_hit_stand_dd            = get_hit_stand_dd_cheat, 
-        get_card                    = get_card_cheat, 
-    )
-
-def play_game_cheat():
-    bj.play_game(
-        sleep                        = True,
-        
-        display                      = print,
-        display_hand                 = txt.display_hand_print,
-        display_emergency_reshuffle  = txt.display_emergency_reshuffle_print,
-        display_final_results        = txt.display_final_results_print,
-
-        get_another_round            = txt.get_another_round_print,
-        get_bet                      = txt.get_bet_print,
-        get_split_choice             = get_split_choice_cheat,
-        get_hit_stand_dd             = get_hit_stand_dd_cheat,
-        get_card                     = get_card_cheat,
-    )
 
 if __name__ == "__main__":
     state = GameState()

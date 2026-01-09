@@ -1,6 +1,6 @@
 # Import libraries
 import random
-import text1 as txt
+import text as txt
 import basic_strategy as hc
 from base import GameState, GameInterface
 

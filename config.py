@@ -1,9 +1,9 @@
 # Since I can't fit all my configs in here, I probably will delete it and put everything in its own parent file
 
 import game_logic as bj
-import text1 as txt
+import text as txt
 import basic_strategy as hc
-import cheat1 as ch
+import cheat as ch
 from base import GameState, GameInterface
 
 text_mode = GameInterface(

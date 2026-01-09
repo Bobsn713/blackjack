@@ -2,9 +2,9 @@
 import pyfiglet
 import time
 import game_logic as bj
-import text1 as txt
-import performance_tracker1 as pt
-import cheat1 as ch
+import text as txt
+import performance_tracker as pt
+import cheat as ch
 import train_nn as tr
 from config import text_mode, hardcode_mode, cheat_mode
 from base import GameState

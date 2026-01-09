@@ -68,12 +68,14 @@ def get_models():
     custom_models = []
     with os.scandir(model_dir) as files: 
         for file in files:
+            if file.name == "sample_neural_net.pt":
+                continue
             if file.name.endswith('.pt'):
-                custom_models.append(file.name)
+                custom_models.append(file.name[:-3])
     
     return custom_models
 
-namespace.append(get_models())
+namespace += get_models()
 
 def onehot_card(card):
     '''This is assuming different input than the other version of this function...so I guess how it ends up working is kind of up in the air still'''
@@ -245,7 +247,7 @@ def test_loop(dataloader, model, loss_fn, l1_weight):
 
             loss1 = loss_fn(pred1, y1)
             loss2 = loss_fn(pred2, y2)
-            test_loss = (loss1*l1_weight + loss2).item()
+            test_loss += (loss1*l1_weight + loss2).item()
 
             correct += ((pred1.argmax(1) == y1) & (pred2.argmax(1) == y2)).type(torch.float).sum().item()
 

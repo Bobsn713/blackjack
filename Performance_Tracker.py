@@ -1,9 +1,8 @@
-import Logic as bj
-import Hardcode as hc
-import Text as txt
+import game_logic as bj
+import basic_strategy as hc
+import text as txt
 import matplotlib.pyplot as plt
-import Imitation as imit
-import Train as tr
+import train_nn as tr
 from base import GameState, GameInterface
 
 import tqdm 

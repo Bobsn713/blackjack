@@ -1,9 +1,9 @@
 import re
 import time 
 
-import Logic as bj
-import Hardcode as hc
-import Text as txt
+import game_logic as bj
+import basic_strategy as hc
+import text as txt
 from base import GameState, GameInterface
 
 # Players could have the option of having the computer track results (which would require them to input bet sizes and final dealer cards) or just recommend hand by hand with no continuity. 

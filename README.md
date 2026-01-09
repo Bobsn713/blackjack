@@ -1,5 +1,7 @@
 # README
 
+The most pressing error is that simulate breaks if you do a lot of iterations.
+
 ## Blackjack Engine Overview
 There are 4 ways to use this Blackjack Engine. 
 1. It can be used to play a text-based blackjack game, with the computer serving as dealer and scorekeeper. 

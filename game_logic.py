@@ -210,7 +210,7 @@ def play_round(state: GameState, ui: GameInterface):
             continue # Move to the next hand in the decision queue
 
         # If it's not a pair, or player can't afford, or max hands reached, it's a final hand
-        if not can_split(current_hand) or state.cash < (len(final_player_hands) + len(player_hands_for_decision) + 1) * bet or len(final_player_hands) + len(player_hands_for_decision) >= MAX_HANDS:
+        if not can_split(current_hand) or state.cash < (len(final_player_hands) + len(player_hands_for_decision) + 1) * bet:
             final_player_hands.append((current_hand, current_bet))
             continue # Move to the next hand in the decision queue
 

@@ -101,7 +101,7 @@ reverse_split_mapping = {v: k for k, v in split_result_mapping.items()}
 reverse_hsd_mapping = {v: k for k, v in hsd_result_mapping.items()}
 
 def encode_split_hsd(player_hand, dealer_hand, can_double, ui):
-    onehot_p_hand = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    onehot_p_hand = np.zeros(len(ranks))
     for card in player_hand:
         onehot_p_hand += onehot_card(card)
     

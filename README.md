@@ -52,4 +52,5 @@ Source for charts:
 Source for blackjack rules:
 <https://bicyclecards.com/how-to-play/blackjack>
 
-### License
+## License
+Distributed under the [MIT](https://github.com/Bobsn713/blackjack/blob/main/LICENSE) License. 

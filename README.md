@@ -6,7 +6,7 @@ __  __  |_  / __  /| |  /    __  ,<       ___ _  /__  /| |  /    __  ,<  __  /
 _  /_/ /_  /___  ___ / /___  _  /| |      / /_/ / _  ___ / /___  _  /| |  /_/  
 /_____/ /_____/_/  |_\____/  /_/ |_|      \____/  /_/  |_\____/  /_/ |_| (_)  
 ```
-This codebase is a blackjack game engine/application where you can build your own neural network and train it to learn basic blackjack strategy. 
+This codebase is a command line blackjack game engine/application where you can build your own neural network and train it to learn basic blackjack strategy. 
 
 ## Blackjack Engine Overview
 There are 4 ways to use this Blackjack Engine without touching any code. 
@@ -18,7 +18,7 @@ There are 4 ways to use this Blackjack Engine without touching any code.
 I developed this engine as an excuse to learn to build neural networks, and built up the other functionality along the way. 
 
 ## Install
-The easiest way to use the blackjack engine is to type the following command in your terminal, with [python](https://www.python.org/downloads/) and [uv](https://docs.astral.sh/uv/getting-started/installation/) installed. 
+The easiest way to use the blackjack engine is to download the code, navigate to the directory you just downloaded, and type the following command in your terminal (with [python](https://www.python.org/downloads/) and [uv](https://docs.astral.sh/uv/getting-started/installation/) installed). 
 
 ```bash
 uv run main.py

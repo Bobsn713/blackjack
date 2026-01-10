@@ -53,8 +53,18 @@ class NeuralNetwork(nn.Module):
         y2 = self.head2(features)
         return y1, y2
 
+# TODO: This needs to get moved, it's redundant with game_logic.py
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 rank_to_index = {rank: i for i, rank in enumerate(ranks)}
+
+try: 
+    # This code won't work with the old version of torch, which will be used for older computers
+    device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+except: 
+    device = "cpu"
+
+# Reduces memory allocation compute time
+_one_input_buffer = torch.empty(1, 28, dtype=torch.float32, device=device)
 
 namespace = ['basic_strategy', 'sample_neural_net']
 
@@ -90,6 +100,7 @@ split_result_mapping = {
     'y' : 1,
     'NA' : 2 # included for reader clarity, not function
 }
+
 hsd_result_mapping = {
     'hit' : 0,
     'stand' : 1,
@@ -341,10 +352,7 @@ def train_model():
     # optimizer = 
     #dataset_hands = int(input("Hands in Dataset: "))
 
-    # I need to fix my torch version to make sure this is working right
-    # device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
-    # print(f"Device: {device}")
-    device = "cpu"
+    print(f"Device: {device}")
 
     n_inputs = 28
     n_outputs_y1 = 3
@@ -447,48 +455,79 @@ def load_model(model_name):
 
     # 3. Load the weights into that architecture
     model.load_state_dict(model_params_weights['model_state_dict'])
-    model.eval()
 
+    model.to(device)
+
+    # # To avoid crashes when simulating lots of hands? Doesn't seem to work
+    # if device == 'cpu':
+    #     quantized_model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+    #     quantized_model.eval()
+    #     return quantized_model
+    
+    model.eval()
     return model
 
 def get_choices_nn(player_hand, dealer_hand, loaded_model, ui):
     can_double = int(len(player_hand)==2)
     row, _, _ = encode_split_hsd(player_hand, dealer_hand, can_double, ui)
 
-    # This is copied and modified slightly from above, making it fairly redundant and probably not as efficient as it could be
-    x1 = torch.tensor(row[0], dtype=torch.float32)
-    x2 = torch.tensor(row[1], dtype=torch.float32)
-    x3 = torch.tensor([row[2]], dtype=torch.float32)
-    x4 = torch.tensor([row[3]], dtype=torch.float32)
+    arr = np.concatenate([
+        row[0],
+        row[1],
+        [row[2], row[3]]
+    ]).astype(np.float32)
 
-    X = torch.cat([x1,x2,x3, x4])
-    X = X.unsqueeze(0)
+    _one_input_buffer[0].copy_(torch.from_numpy(arr).to(device))
+
+    #### OLD CODE TODO: Delete if the above works. 
+    # # This is copied and modified slightly from above, making it fairly redundant and probably not as efficient as it could be
+    # x1 = torch.tensor(row[0], dtype=torch.float32)
+    # x2 = torch.tensor(row[1], dtype=torch.float32)
+    # x3 = torch.tensor([row[2]], dtype=torch.float32)
+    # x4 = torch.tensor([row[3]], dtype=torch.float32)
+
+    # X = torch.cat([x1,x2,x3, x4])
+    # X = X.unsqueeze(0)
     
     with torch.no_grad():
-        y1, y2 = loaded_model(X)
+        y1, y2 = loaded_model(_one_input_buffer)
 
-        # # Use softmax to see probabilities if you like
+    return y1, y2 
+
+        # # Use softmax to see probabilities
         # probs_split = torch.softmax(y1, dim=1)
         # probs_hsd = torch.softmax(y2, dim=1)
 
-        # print(f"Split Probs: {probs_split}")
-        # print(f"HSD Probs: {probs_hsd}")
+    #     split_decision = reverse_split_mapping[torch.argmax(y1).item()]
+    #     hsd_decision = reverse_hsd_mapping[torch.argmax(y2).item()]
 
-        split_decision = reverse_split_mapping[torch.argmax(y1).item()]
-        hsd_decision = reverse_hsd_mapping[torch.argmax(y2).item()]
+    # # Just for debugging
+    # with open('output.csv', 'a') as file:
+    #     file.write(f"{row},{split_decision},{hsd_decision}\n")
 
-        return split_decision, hsd_decision
+    # return split_decision, hsd_decision, probs_split, probs_hsd
     
 def get_split_choice_nn(player_hand, dealer_hand, loaded_model, ui):
-    split_decision, _ = get_choices_nn(player_hand, dealer_hand, loaded_model, ui)
+    y1, _ = get_choices_nn(player_hand, dealer_hand, loaded_model, ui)
+
+    # Making sure NA doesn't get used as an output
+    y1_masked = y1.clone()
+    y1_masked[0, split_result_mapping['NA']] = float("-inf")
+
+    split_decision = reverse_split_mapping[torch.argmax(y1_masked).item()]
+    # split_decision = reverse_split_mapping[torch.argmax(y1).item()]
     return split_decision
 
 def get_hit_stand_dd_nn(player_hand, dealer_hand, can_double, loaded_model, ui):
-    _, hsd_decision = get_choices_nn(player_hand, dealer_hand, loaded_model, ui)
+    _, y2 = get_choices_nn(player_hand, dealer_hand, loaded_model, ui)
+    
+    # Making sure NA doesn't get used as an output
+    y2_masked = y2.clone()
+    y2_masked[0, hsd_result_mapping['NA']] = float("-inf")
+
+    hsd_decision = reverse_hsd_mapping[torch.argmax(y2_masked).item()]
+    # hsd_decision = reverse_hsd_mapping[torch.argmax(y2).item()]
     return hsd_decision
-
-
-#TODO: I need to make it so we can use trained models for inference/the performance tracker
 
 if __name__ == '__main__':
     ui = GameInterface()

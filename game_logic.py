@@ -129,7 +129,6 @@ def play_individual_hand(state: GameState, ui: GameInterface, hand, bet):
                     'bet_multiplier': 2,
                     'final': False  # Need to compare with dealer
                 }
-
         else: 
             ui.display("Invalid Input")
             

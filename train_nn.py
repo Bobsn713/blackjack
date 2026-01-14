@@ -394,6 +394,8 @@ def train_model():
     print(f"\033[3mTraining Completed in {elapsed_time:.4f} seconds.\033[0m")
     print("-"*80)
 
+    print("\nTo continue, close the graph pop-ups...")
+
     # Graphing
     plt.plot(test_accs)
     plt.xlabel('Epochs')

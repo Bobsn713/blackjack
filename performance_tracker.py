@@ -10,10 +10,6 @@ import numpy as np
 from scipy.stats import t
 import matplotlib.pyplot as plt
 
-# 2 good ways to improve this:
-# 1. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
-# 2. Make it so that it can play through decks instead of just through rounds. This will eventually make it so I can factor in card-counting strategies. 
-
 def performance_tracker(model, iterations = 10000):
     model = model.lower()
 
@@ -183,6 +179,7 @@ def performance_tracker(model, iterations = 10000):
     print(f"Player Higher: {perc_p_higher}%   Dealer Higher: {perc_d_higher}%   Non-BJ Push: {perc_push_excl}%")
     print(f"Split Hands: {perc_split_hands}%   Doubled Down Hands: {perc_double_downs}%")
 
+    print("\nTo continue, close the graph pop-up...")
     plt.plot(running_cash_total)
     plt.show()
 

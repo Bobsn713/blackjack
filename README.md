@@ -56,11 +56,12 @@ Ideas to build on this program further include, in rough order of priority:
 * Allow users to use trained models in "cheat" mode. 
 * Calculate odds in different positions using the engine instead of relying on established basic-strategy rules. 
 * Go beyond basic strategy to include card-counting capabilities. 
-* Make the ruleset customizable. 
+* Allow comparison of multiple models on the same decks/hands in simulation mode.
 * Allow newer machines to use newer versions of `pytorch`/`numpy` and use their GPUs. 
 * Allow users to see the hyperparameters of their various models. 
 * Allow users to customize the activation functions used in their models. 
 * Allow the user to simulate different betting strategies. 
+* Make the ruleset more customizable. 
 * Switch from the current "imitation" model of training the neural network to a true RL framework.
 * Build a database of hyperparameter combinations to map out the hyperparameter "loss landscape". 
 * Make a web-based version for less technical people. 

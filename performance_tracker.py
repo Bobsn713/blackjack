@@ -1,7 +1,6 @@
-import game_logic as bj
-import basic_strategy as hc
-import text as txt
-import matplotlib.pyplot as plt
+import game_logic as gl
+import basic_strategy as bs
+import text as tx
 import train_nn as tr
 from base import GameState, GameInterface
 
@@ -9,6 +8,7 @@ import tqdm
 import time
 import numpy as np 
 from scipy.stats import t
+import matplotlib.pyplot as plt
 
 # 2 good ways to improve this:
 # 1. Make it so that it can evaluate hardcode and imit simultaneously, on the same hands
@@ -33,8 +33,8 @@ def performance_tracker(model, iterations = 10000):
     running_cash_total = []
 
     if model == 'basic_strategy':
-        get_split_choice = hc.get_split_choice_hardcode
-        get_hit_stand_dd = hc.get_hit_stand_dd_hardcode
+        get_split_choice = bs.get_split_choice_hardcode
+        get_hit_stand_dd = bs.get_hit_stand_dd_hardcode
     elif model in tr.get_models(): # update this
         loaded_model = tr.load_model(model)
         get_split_choice = lambda p_hand, d_hand, ui: tr.get_split_choice_nn(p_hand, d_hand, loaded_model, ui)
@@ -46,14 +46,14 @@ def performance_tracker(model, iterations = 10000):
     state = GameState(cash = iterations)
     simulation_mode = GameInterface(
         # Display functions
-        display                     = hc.display_nothing_hardcode,
-        display_hand                = hc.display_nothing_hardcode,
-        display_emergency_reshuffle = hc.display_nothing_hardcode,
-        display_final_results       = hc.display_nothing_hardcode,
+        display                     = bs.display_nothing_hardcode,
+        display_hand                = bs.display_nothing_hardcode,
+        display_emergency_reshuffle = bs.display_nothing_hardcode,
+        display_final_results       = bs.display_nothing_hardcode,
 
         # Get Functions
         get_bet                      = lambda cash: state.bet,
-        get_card                     = bj.get_card_deal,
+        get_card                     = gl.get_card_deal,
         get_split_choice             = get_split_choice,
         get_hit_stand_dd             = get_hit_stand_dd,
         get_another_round            = lambda: 'y',
@@ -68,11 +68,11 @@ def performance_tracker(model, iterations = 10000):
         deck_len = len(state.deck)
         reshuffle_size = int(deck_len / 4) 
         if len(state.deck) < reshuffle_size:
-            bj.create_deck(state)
+            gl.create_deck(state)
 
         # Could update bet dynamically by editing state.bet
         
-        return_dict = bj.play_round(state, simulation_mode)
+        return_dict = gl.play_round(state, simulation_mode)
 
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
@@ -159,7 +159,7 @@ def performance_tracker(model, iterations = 10000):
 
 
     print()
-    txt.print_title_box(["RESULTS"])
+    tx.print_title_box(["RESULTS"])
     print(f"\033[3m{iterations:,} hands simulated in {elapsed_time:.4f} seconds...\033[0m")
     print()
     print(f"Cumulative Outcome: {cumulative_cash_change} units")

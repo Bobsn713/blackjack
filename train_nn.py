@@ -1,6 +1,6 @@
-import game_logic as bj
-import basic_strategy as hc
-import text as txt
+import game_logic as gl
+import basic_strategy as bs
+import text as tx
 
 import torch
 from torch import nn 
@@ -118,15 +118,15 @@ def encode_split_hsd(player_hand, dealer_hand, can_double, ui):
     
     onehot_d_upcard = onehot_card(dealer_hand[0])
 
-    can_split = int(bj.can_split(player_hand)) # will this break on hands with multiple splits?
+    can_split = int(gl.can_split(player_hand)) # will this break on hands with multiple splits?
 
     # Uncomment the following if we switch to a game-based model vs this round-based model
     can_double = int(len(player_hand) == 2) # and cash >= 2 * bet
 
-    raw_split_result = hc.get_split_choice_hardcode(player_hand, dealer_hand, ui)
+    raw_split_result = bs.get_split_choice_hardcode(player_hand, dealer_hand, ui)
     split_result = split_result_mapping[raw_split_result]
 
-    raw_hsd_result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double, ui)
+    raw_hsd_result = bs.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double, ui)
     hsd_result = hsd_result_mapping[raw_hsd_result]
 
     # Overrides
@@ -160,23 +160,23 @@ def hsd_to_csv(player_hand, dealer_hand, can_double):
     return raw_hsd_result
 
 def make_training_data(iterations):
-    deck = bj.create_deck()
-    bj.shuffle_deck(deck)
+    deck = gl.create_deck()
+    gl.shuffle_deck(deck)
     
     print(f"Playing {iterations:,} hands...")
     for _ in tqdm.tqdm(range(iterations)): 
-        bj.play_round(
+        gl.play_round(
             cash = 1000, #infinite cash relative to bet size
             deck = deck, 
             sleep = False, 
             get_bet = lambda cash: 1, #minimal bet size, the lambda is so its callable to avoid an error
             get_split_choice = split_to_csv,
-            get_card = bj.get_card_deal,
-            display = hc.display_nothing_hardcode, 
+            get_card = gl.get_card_deal,
+            display = bs.display_nothing_hardcode, 
             get_hit_stand_dd = hsd_to_csv,  
-            display_hand = hc.display_nothing_hardcode, 
-            display_emergency_reshuffle = hc.display_nothing_hardcode, 
-            display_final_results = hc.display_nothing_hardcode
+            display_hand = bs.display_nothing_hardcode, 
+            display_emergency_reshuffle = bs.display_nothing_hardcode, 
+            display_final_results = bs.display_nothing_hardcode
         )
     return
 
@@ -376,7 +376,7 @@ def train_model():
     l1_weight = 1
 
     print()
-    txt.print_title_box(["BEGIN TRAINING"])
+    tx.print_title_box(["BEGIN TRAINING"])
     print()
 
     start_time = time.perf_counter()
@@ -433,14 +433,13 @@ def train_model():
     print()
     print("Would you like to save your model? ")
     save_yn = input(">>> ")
-    if save_yn == "y": 
+    if save_yn.strip().lower() in ['y', 'yes', 'save']: 
         model_name += ".pt"
         model_file_location = os.path.join(model_dir, model_name)
         torch.save(model_params_weights, model_file_location)
         print("\nModel Saved.")
-    # TODO: How do I want to integrate the performance tracker? 
 
-    txt.print_title_box(["EXITING TRAINING MODE"])
+    tx.print_title_box(["EXITING TRAINING MODE"])
     print()
 
 #train_model()

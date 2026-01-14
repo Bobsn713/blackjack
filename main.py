@@ -1,8 +1,8 @@
 # This is the most user friendly way to run the code here
 import pyfiglet
 import time
-import game_logic as bj
-import text as txt
+import game_logic as gl
+import text as tx
 import performance_tracker as pt
 import cheat as ch
 import train_nn as tr
@@ -38,15 +38,15 @@ def main_loop():
             print("Type 'quit' or 'q' to leave the program")
         elif mode_choice in ['play', 'p']:
             state = GameState()
-            bj.play_game(state, text_mode)
+            gl.play_game(state, text_mode)
         elif mode_choice in ['cheat', 'c']:
             state = GameState()
-            bj.play_game(state, cheat_mode)
+            gl.play_game(state, cheat_mode)
         elif mode_choice in ['simulate', 's']:
-            txt.print_title_box(["ENTERING SIMULATION MODE..."])
+            tx.print_title_box(["ENTERING SIMULATION MODE..."])
             pt.choose_model()
         elif mode_choice in ['train', 't']:
-            txt.print_title_box(["ENTERING TRAINING MODE..."])
+            tx.print_title_box(["ENTERING TRAINING MODE..."])
             tr.train_model()
         elif mode_choice in ['quit', 'q']:
             keep_playing = False

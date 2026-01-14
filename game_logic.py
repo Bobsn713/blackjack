@@ -1,7 +1,7 @@
 # Import libraries
 import random
-import text as txt
-import basic_strategy as hc
+import text as tx
+import basic_strategy as bs
 from base import GameState, GameInterface
 
 # Generate a deck of cards
@@ -358,7 +358,7 @@ def play_round(state: GameState, ui: GameInterface):
 
 
 def play_game(state: GameState, ui: GameInterface):
-    txt.print_title_box(["STARTING NEW GAME..."])
+    tx.print_title_box(["STARTING NEW GAME..."])
     ui.display()
     state.cash = starting_cash
     create_deck(state)
@@ -400,12 +400,12 @@ def play_game(state: GameState, ui: GameInterface):
 
         ui.display(f"Cash: ${state.cash}")
         if state.cash <= 0:
-            txt.print_title_box(["GAME OVER", "~ OUT OF MONEY! ~"])
+            tx.print_title_box(["GAME OVER", "~ OUT OF MONEY! ~"])
             ui.display()
             break
         again = ui.get_another_round()
         if again != 'y':
-            txt.print_title_box(["GAME OVER", f"~ FINAL CASH: ${state.cash} ~"])
+            tx.print_title_box(["GAME OVER", f"~ FINAL CASH: ${state.cash} ~"])
             ui.display()
             ui.display("\033[3mThanks for Playing!\033[0m\n") # These are italics
             break
@@ -429,16 +429,16 @@ if __name__ == "__main__":
     text_mode = GameInterface(
         # Display functions
         display                     = print, 
-        display_hand                = txt.display_hand_print,
-        display_emergency_reshuffle = txt.display_emergency_reshuffle_print,
-        display_final_results       = txt.display_final_results_print,
+        display_hand                = tx.display_hand_print,
+        display_emergency_reshuffle = tx.display_emergency_reshuffle_print,
+        display_final_results       = tx.display_final_results_print,
 
         # Get Functions
-        get_bet                     = txt.get_bet_print,
+        get_bet                     = tx.get_bet_print,
         get_card                    = get_card_deal,
-        get_split_choice            = txt.get_split_choice_print,
-        get_hit_stand_dd            = txt.get_hit_stand_dd_print,
-        get_another_round           = txt.get_another_round_print,
+        get_split_choice            = tx.get_split_choice_print,
+        get_hit_stand_dd            = tx.get_hit_stand_dd_print,
+        get_another_round           = tx.get_another_round_print,
 
         # Other
         sleep = True)
@@ -446,16 +446,16 @@ if __name__ == "__main__":
     hardcode_mode = GameInterface(
         # Display functions
         display                     = print,
-        display_hand                = txt.display_hand_print, # or hc.display_hand_hardcode
-        display_emergency_reshuffle = txt.display_emergency_reshuffle_print, # or hc.emergency_reshuffle_hardcode
-        display_final_results       = txt.display_final_results_print,
+        display_hand                = tx.display_hand_print, # or bs.display_hand_hardcode
+        display_emergency_reshuffle = tx.display_emergency_reshuffle_print, # or bs.emergency_reshuffle_hardcode
+        display_final_results       = tx.display_final_results_print,
 
         # Get Functions
-        get_bet                     = hc.get_bet_hardcode,
+        get_bet                     = bs.get_bet_hardcode,
         get_card                    = get_card_deal,
-        get_split_choice            = hc.get_split_choice_hardcode,
-        get_hit_stand_dd            = hc.get_hit_stand_dd_hardcode,
-        get_another_round           = hc.get_another_round_hardcode,
+        get_split_choice            = bs.get_split_choice_hardcode,
+        get_hit_stand_dd            = bs.get_hit_stand_dd_hardcode,
+        get_another_round           = bs.get_another_round_hardcode,
 
         # Other
         sleep = False)

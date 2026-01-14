@@ -1,10 +1,10 @@
-import game_logic as bj
+import game_logic as gl
 
 ### STRATEGY FUNCTIONS
 
 def hard_decision(player_hand, dealer_hand, can_double):
-    player_total = bj.hand_value(player_hand)
-    dealer_upcard_value = bj.card_value(dealer_hand[0])
+    player_total = gl.hand_value(player_hand)
+    dealer_upcard_value = gl.card_value(dealer_hand[0])
 
     # Decision logic from chart
     if player_total >= 17:
@@ -23,7 +23,7 @@ def hard_decision(player_hand, dealer_hand, can_double):
         return "hit"
     
 def soft_decision(player_hand, dealer_hand, can_double, soft_total):
-    dealer_upcard_value = bj.card_value(dealer_hand[0])
+    dealer_upcard_value = gl.card_value(dealer_hand[0])
 
     # Decision logic from chart
     if soft_total in [9, 10]:
@@ -50,7 +50,7 @@ def is_soft_total(hand): #it's possible this makes more sense to put in the Logi
     """Returns a tuple (is_soft, total) where total is either soft or hard depending on is_soft"""
     hand_ranks = []
     for card in hand:
-        hand_ranks.append(bj.card_value(card))
+        hand_ranks.append(gl.card_value(card))
 
     for i, card in enumerate(hand_ranks): 
         if sum(hand_ranks) > 21 and card == 11:
@@ -80,7 +80,7 @@ def get_bet_hardcode(cash):
 
 def get_split_choice_hardcode(player_hand, dealer_hand, ui): 
     card = player_hand[0][0] #Either hand would do
-    dealer_upcard_value = bj.card_value(dealer_hand[0]) #Is it confusing that this is the only place we do value instead of dealer upcard as a string? 
+    dealer_upcard_value = gl.card_value(dealer_hand[0]) #Is it confusing that this is the only place we do value instead of dealer upcard as a string? 
 
     # Decision logic from chart
     if card == 'A' or card == '8':

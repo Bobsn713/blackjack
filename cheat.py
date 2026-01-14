@@ -1,9 +1,9 @@
 import re
 import time 
 
-import game_logic as bj
-import basic_strategy as hc
-import text as txt
+import game_logic as gl
+import basic_strategy as bs
+import text as tx
 from base import GameState, GameInterface
 
 # Players could have the option of having the computer track results (which would require them to input bet sizes and final dealer cards) or just recommend hand by hand with no continuity. 
@@ -52,7 +52,7 @@ def get_hand_cheat():
     return clean_hand
 
 def get_split_choice_cheat(player_hand, dealer_hand, ui):
-    result = hc.get_split_choice_hardcode(player_hand, dealer_hand, ui)
+    result = bs.get_split_choice_hardcode(player_hand, dealer_hand, ui)
 
     ui.wait(1) # Brief delay after entry
 
@@ -69,7 +69,7 @@ def get_split_choice_cheat(player_hand, dealer_hand, ui):
     return result
 
 def get_hit_stand_dd_cheat(player_hand, dealer_hand, can_double, ui):
-    result = hc.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double, ui)
+    result = bs.get_hit_stand_dd_hardcode(player_hand, dealer_hand, can_double, ui)
 
     ui.wait(1) # Brief delay after the split decision
 
@@ -149,18 +149,18 @@ if __name__ == "__main__":
     cheat_mode = GameInterface(
     # Display functions
     display                     = print,
-    display_hand                = txt.display_hand_print,
-    display_emergency_reshuffle = txt.display_emergency_reshuffle_print,
-    display_final_results       = txt.display_final_results_print,
+    display_hand                = tx.display_hand_print,
+    display_emergency_reshuffle = tx.display_emergency_reshuffle_print,
+    display_final_results       = tx.display_final_results_print,
 
     # Get Functions
-    get_bet                      = txt.get_bet_print,
+    get_bet                      = tx.get_bet_print,
     get_card                     = get_card_cheat,
     get_split_choice             = get_split_choice_cheat,
     get_hit_stand_dd             = get_hit_stand_dd_cheat,
-    get_another_round            = txt.get_another_round_print,
+    get_another_round            = tx.get_another_round_print,
 
     # Other
     sleep = True
     )
-    bj.play_game(state, cheat_mode)
+    gl.play_game(state, cheat_mode)

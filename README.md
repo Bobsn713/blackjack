@@ -23,7 +23,11 @@ The easiest way to use the blackjack engine is to download the code, navigate to
 ```bash
 uv run main.py
 ```
-For those unsure where to start when training a neural network, some relatively reasonable default parameters are: 
+
+(Note: The first time you run this code, it may take a few minutes to install `torch`, the python library that the program uses for the neural network functionality. Subsequent runs will be faster.) 
+
+
+If you're unsure where to start when training a neural network, some relatively reasonable default parameters are: 
 ```
 Layers: 8
 Neurons per Layer: 128
@@ -39,9 +43,11 @@ For those interested in digging deeper into the code, here's the basic outline:
 * `game_logic.py` is where the underlying logic of the game is defined. To make different game-modes (text-based play along, getting recommended moves, simulating thousands of hands) that use the same game logic, turn-structure, etc., the structure is built around the use of dependency injection, and calls different functions based on which functions are passed as arguments in the `GameState` and `GameInterface` objects. 
 * Those objects are defined in `base.py`, and a few common configurations are stored in `config.py`. 
 * Most of the functions for each game-mode, which are either passed into the main functions of `game_logic.py` or called by `main.py`, are defined in their own file. That's what `text.py`, `basic_strategy.py`, `cheat.py`, `train_nn.py`, and `performance_tracker.py` do. 
+* The `csvdata/` directory houses the training and testing dataset as a csv file, which can be regenerated using some of the code in `train_nn.py`
+* All neural network models are saved in the `models/` directory. 
 
 ## Rules
-It is not yet possible to customize the ruleset. The current rules are:
+It is not possible right now to customize the ruleset. The current rules are:
 
 * doubling down is allowed,
 * splitting is allowed,
@@ -68,7 +74,7 @@ Ideas to build on this program further include, in rough order of priority:
 * Build a GUI, either terminal based or not?
 
 ## Sources
-Source for charts:
+Source for basic-strategy:
 <https://www.blackjackapprenticeship.com/blackjack-strategy-charts/>
 
 Source for blackjack rules:
